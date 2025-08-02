@@ -1,0 +1,1989 @@
+- name: Premier League
+  nation: England
+  clubs:
+  - rating: 86.9
+    fullName: Liverpool Football Club
+    names:
+    - Liverpool
+    nickname: The Reds
+    colors:
+    - dred
+    - uwhite
+  - rating: 86.7
+    fullName: Arsenal Football Club
+    names:
+    - Arsenal
+    nickname: The Gunners
+    colors:
+    - ured
+    - uwhite
+  - rating: 86.2
+    fullName: Manchester City Football Club
+    names:
+    - Manchester City
+    - Man City
+    nickname: The Citizens
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 85.0
+    fullName: Chelsea Football Club
+    names:
+    - Chelsea
+    nickname: The Blues
+    colors:
+    - ublue
+    - uwhite
+  - rating: 84.4
+    fullName: Aston Villa Football Club
+    names:
+    - Aston Villa
+    - Villa
+    nickname: The Villans
+    colors:
+    - lbrown
+    - ucyan
+  - rating: 84.3
+    fullName: Newcastle United Football Club
+    names:
+    - Newcastle United
+    - Newcastle
+    nickname: The Magpies
+    colors:
+    - ublack
+    - uwhite
+  - rating: 83.7
+    fullName: Crystal Palace Football Club
+    names:
+    - Crystal Palace
+    - Palace
+    nickname: The Eagles
+    colors:
+    - ublue
+    - ured
+  - rating: 83.3
+    fullName: Brighton and Hove Albion Football Club
+    names:
+    - Brighton
+    nickname: The Seagulls
+    colors:
+    - ublue
+    - uwhite
+  - rating: 82.4
+    fullName: AFC Bournemouth
+    names:
+    - Bournemouth
+    nickname: The Cherries
+    colors:
+    - dred
+    - ublack
+  - rating: 82.3
+    fullName: Brentford Football Club
+    names:
+    - Brentford
+    nickname: The Bees
+    colors:
+    - ured
+    - uwhite
+  - rating: 82.2
+    fullName: Nottingham Forest Football Club
+    names:
+    - Nottingham Forest
+    - Forest
+    nickname: The Tricky Trees
+    colors:
+    - ured
+    - uwhite
+  - rating: 82.0
+    fullName: Manchester United Football Club
+    names:
+    - Manchester United
+    - Man United
+    nickname: The Red Devils
+    colors:
+    - ured
+    - dyellow
+  - rating: 81.8
+    fullName: Everton Football Club
+    names:
+    - Everton
+    nickname: The Toffees
+    colors:
+    - ublue
+    - uwhite
+  - rating: 81.7
+    fullName: Tottenham Hotspur Football Club
+    names:
+    - Tottenham
+    - Tottenham Hotspur
+    nickname: Spurs
+    colors:
+    - uwhite
+    - dblue
+  - rating: 81.5
+    fullName: Fulham Football Club
+    names:
+    - Fulham
+    nickname: The Cottagers
+    colors:
+    - uwhite
+    - ublack
+  - rating: 80.9
+    fullName: West Ham United Football Club
+    names:
+    - West Ham
+    - West Ham United
+    nickname: The Hammers
+    colors:
+    - lbrown
+    - uwhite
+  - rating: 80.6
+    fullName: Wolverhampton Wanderers
+    names:
+    - Wolverhampton
+    nickname: Wolves
+    colors:
+    - ugold
+    - ublack
+  - rating: 79.3
+    fullName: Burnley Football Club
+    names:
+    - Burnley
+    nickname: The Clarets
+    colors:
+    - lbrown
+    - ucyan
+  - rating: 79.3
+    fullName: Leeds United Football Club
+    names:
+    - Leeds United
+    - Leeds
+    nickname: The Whites
+    colors:
+    - uwhite
+    - ublue
+  - rating: 78.0
+    fullName: Sunderland Association Football Club
+    names:
+    - Sunderland
+    nickname: The Black Cats
+    colors:
+    - ured
+    - uwhite
+- name: EFL Sky Bet Championship
+  nation: England
+  clubs:
+  - rating: 78.6
+    fullName: Sheffield United Football Club
+    names:
+    - Sheffield United
+    - Sheffield U
+    nickname: The Blades
+    colors:
+    - ured
+    - uwhite
+  - rating: 76.9
+    fullName: Leicester City Football Club
+    names:
+    - Leicester City
+    - Leicester
+    nickname: The Foxes
+    colors:
+    - ublue
+    - uwhite
+  - rating: 76.8
+    fullName: Ipswich Town Football Club
+    names:
+    - Ipswich Town
+    - Ipswich
+    nickname: The Tractor Boys
+    colors:
+    - ublue
+    - uwhite
+  - rating: 76.7
+    fullName: Coventry City Football Club
+    names:
+    - Coventry City
+    - Coventry
+    nickname: The Sky Blues
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 76.4
+    fullName: Southampton Football Club
+    names:
+    - Southampton
+    nickname: The Saints
+    colors:
+    - ured
+    - uwhite
+  - rating: 76.2
+    fullName: West Bromwich Albion Football Club
+    names:
+    - West Bromwich Albion
+    - West Bromwich
+    - Bromwich
+    - WBA
+    nickname: The Baggies
+    colors:
+    - dblue
+    - uwhite
+  - rating: 76.1
+    fullName: Millwall Football Club
+    names:
+    - Milwall
+    nickname: The Lions
+    colors:
+    - ublue
+    - uwhite
+  - rating: 76.1
+    fullName: Middlesbrough Football Club
+    names:
+    - Middlesbrough
+    nickname: Boro
+    colors:
+    - ured
+    - uwhite
+  - rating: 76.0
+    fullName: Bristol City Football Club
+    names:
+    - Bristol City
+    nickname: The Robins
+    colors:
+    - ured
+    - uwhite
+  - rating: 75.7
+    fullName: Blackburn Rovers Football Club
+    names:
+    - Blackburn Rovers
+    - Blackburn
+    nickname: The Riversiders
+    colors:
+    - ublue
+    - uwhite
+  - rating: 75.6
+    fullName: Swansea City Association Football Club
+    names:
+    - Swansea City
+    - Swansea
+    nickname: The Swans
+    colors:
+    - uwhite
+    - ublack
+  - rating: 75.4
+    fullName: Birmingham City Football Club
+    names:
+    - Birmingham City
+    - Birmingham
+    nickname: The Blues
+    colors:
+    - ublue
+    - uwhite
+  - rating: 75.4
+    fullName: Norwich City Football Club
+    names:
+    - Norwich City
+    - Norwich
+    nickname: The Canaries
+    colors:
+    - uyellow
+    - ugreen
+  - rating: 75.3
+    fullName: Sheffield Wednesday Football Club
+    names:
+    - Sheffield Wednesday
+    - Sheffield W
+    nickname: The Owls
+    colors:
+    - ublue
+    - uwhite
+  - rating: 75.2
+    fullName: Portsmouth Football Club
+    names:
+    - Portsmouth
+    nickname: Pompey
+    colors:
+    - ublue
+    - uwhite
+  - rating: 75.1
+    fullName: Hull City Association Football Club
+    names:
+    - Hull City
+    - Hull
+    nickname: The Tigers
+    colors:
+    - uorange
+    - ublack
+  - rating: 75.0
+    fullName: Queens Park Rangers Football Club
+    names:
+    - Queens Park Rangers
+    - QPR
+    nickname: The Hoops
+    colors:
+    - ublue
+    - uwhite
+  - rating: 74.9
+    fullName: Derby County Football Club
+    names:
+    - Derby County
+    - Derby
+    nickname: The Rams
+    colors:
+    - uwhite
+    - ublack
+  - rating: 74.8
+    fullName: Preston North End Football Club
+    names:
+    - Preston North End
+    - Preston
+    nickname: The Lilywhites
+    colors:
+    - uwhite
+    - dblue
+  - rating: 74.8
+    fullName: Stoke City Football Club
+    names:
+    - Stoke City
+    - Stoke
+    nickname: The Potters
+    colors:
+    - ured
+    - uwhite
+  - rating: 74.7
+    fullName: Wrexham Association Football Club
+    names:
+    - Wrexham
+    nickname: The Red Dragons
+    colors:
+    - ured
+    - uwhite
+  - rating: 74.6
+    fullName: Charlton Athletic Football Club
+    names:
+    - Charlton Athletic
+    - Charlton
+    nickname: The Valiants
+    colors:
+    - ured
+    - uwhite
+  - rating: 74.6
+    fullName: Watford Football Club
+    names:
+    - Watford
+    nickname: The Hornets
+    colors:
+    - uyellow
+    - ured
+  - rating: 74.5
+    fullName: Oxford United Football Club
+    names:
+    - Oxford United
+    - Oxford
+    nickname: The U's
+    colors:
+    - uyellow
+    - dblue
+- name: Serie A Enilive
+  nation: Italy
+  clubs:
+  - rating: 84.1
+    fullName: Football Club Internazionale Milano S.p.A.
+    names:
+    - Inter
+    - Inter Milan
+    - Internazionale
+    nickname: I Nerazzurri
+    colors:
+    - ublue
+    - ublack
+  - rating: 82.4
+    fullName: Società Sportiva Calcio Napoli S.p.A.
+    names:
+    - Napoli
+    nickname: Gli Azzurri
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 82.3
+    fullName: Atalanta Bergamasca Calcio S.p.A.
+    names:
+    - Atalanta
+    nickname: La Dea
+    colors:
+    - ublue
+    - ublack
+  - rating: 82.0
+    fullName: Associazione Sportiva Roma S.p.A.
+    names:
+    - Roma
+    nickname: I Giallorossi
+    colors:
+    - dred
+    - dyellow
+  - rating: 81.5
+    fullName: Juventus Football Club S.p.A.
+    names:
+    - Juventus
+    nickname: La Vecchia Signora
+    colors:
+    - uwhite
+    - ublack
+  - rating: 81.4
+    fullName: Associazione Calcio Milan S.p.A
+    names:
+    - Milan
+    - AC Milan
+    nickname: I Rossoneri
+    colors:
+    - ured
+    - ublack
+  - rating: 80.9
+    fullName: Società Sportiva Lazio S.p.A.
+    names:
+    - Lazio
+    nickname: I Biancocelesti
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 80.5
+    fullName: Bologna Football Club 1909 S.p.A.
+    names:
+    - Bologna
+    nickname: I Rossoblù
+    colors:
+    - ured
+    - dblue
+  - rating: 80.3
+    fullName: ACF Fiorentina S.r.l.
+    names:
+    - Fiorentina
+    nickname: I Viola
+    colors:
+    - uviolet
+    - uwhite
+  - rating: 78.2
+    fullName: Torino Football Club S.p.A.
+    names:
+    - Torino
+    nickname: Il Toro
+    colors:
+    - dred
+    - uwhite
+  - rating: 78.1
+    fullName: Como 1907 S.r.l.
+    names:
+    - Como
+    - Como 1907
+    nickname: I Lariani
+    colors:
+    - ublue
+    - uwhite
+  - rating: 77.8
+    fullName: Genoa Cricket and Football Club S.p.A.
+    names:
+    - Genoa
+    nickname: Il Grifone
+    colors:
+    - dblue
+    - dred
+  - rating: 76.9
+    fullName: Udinese Calcio S.p.A.
+    names:
+    - Udinese
+    nickname: I Friulani
+    colors:
+    - uwhite
+    - ublack
+  - rating: 76.7
+    fullName: Parma Calcio 1913 S.r.l.
+    names:
+    - Parma
+    nickname: I Crociati
+    colors:
+    - uyellow
+    - dblue
+  - rating: 76.3
+    fullName: Cagliari Calcio S.p.A.
+    names:
+    - Cagliari
+    nickname: Gli Isolani
+    colors:
+    - ured
+    - dblue
+  - rating: 76.1
+    fullName: Unione Sportiva Sassuolo Calcio S.r.l.
+    names:
+    - Sassuolo
+    nickname: I Neroverdi
+    colors:
+    - dgreen
+    - ublack
+  - rating: 76.1
+    fullName: Hellas Verona Football Club S.p.A.
+    names:
+    - Hellas Verona
+    - Verona
+    nickname: I Gialloblù
+    colors:
+    - dblue
+    - uyellow
+  - rating: 75.9
+    fullName: Unione Sportiva Lecce S.p.A.
+    names:
+    - Lecce
+    nickname: I Giallorossi
+    colors:
+    - uyellow
+    - dblue
+  - rating: 75.8
+    fullName: Pisa Sporting Club S.r.l.
+    names:
+    - Pisa
+    nickname: I Torri
+    colors:
+    - ublue
+    - ublack
+  - rating: 75.8
+    fullName: Unione Sportiva Cremonese S.p.A.
+    names:
+    - Cremonese
+    nickname: I Grigiorossi
+    colors:
+    - ured
+    - ugrey
+- name: Serie BKT
+  nation: Italy
+  clubs:
+  - rating: 75.9
+    fullName: Empoli Football Club S.p.A.
+    names:
+    - Empoli
+    nickname: Azzurri Empolesi
+    colors:
+    - ublue
+    - uwhite
+  - rating: 75.6
+    fullName: Venezia Football Club S.r.l.
+    names:
+    - Venezia
+    nickname: I Leoni Alati
+    colors:
+    - ublack
+    - uorange
+  - rating: 74.6
+    fullName: Spezia Calcio
+    names:
+    - Spezia
+    nickname: Aquilotti
+    colors:
+    - uwhite
+    - ublack
+  - rating: 74.3
+    fullName: Associazione Calcio Monza S.p.A.
+    names:
+    - Monza
+    nickname: I Bagai
+    colors:
+    - ured
+    - uwhite
+  - rating: 73.4
+    fullName: Palermo Football Club
+    names:
+    - Palermo
+    nickname: I Rosanero
+    colors:
+    - upink
+    - ublack
+  - rating: 73.1
+    fullName: Unione Sportiva Catanzaro 1929
+    names:
+    - Catanzaro
+    nickname: Aquile del Sud
+    colors:
+    - ured
+    - uyellow
+  - rating: 72.8
+    fullName: Società Sportiva Juve Stabia
+    names:
+    - Juve Stabia
+    - Stabia
+    nickname: Le Vespe
+    colors:
+    - uyellow
+    - ublack
+  - rating: 72.7
+    fullName: Cesena Football Club
+    names:
+    - Cesena
+    nickname: I Cavallucci Marini
+    colors:
+    - uwhite
+    - ublack
+  - rating: 72.7
+    fullName: Fußball Club Südtirol s.r.l.
+    names:
+    - Südtirol
+    - Sudtirol
+    nickname: Biancorossi
+    colors:
+    - uwhite
+    - ured
+  - rating: 72.5
+    fullName: Società Sportiva Calcio Bari S.p.A.
+    names:
+    - Bari
+    nickname: I Galletti
+    colors:
+    - uwhite
+    - ured
+  - rating: 72.5
+    fullName: Unione Calcio Sampdoria S.p.A.
+    names:
+    - Sampdoria
+    nickname: I Blucerchiati
+    colors:
+    - ublue
+    - uwhite
+  - rating: 72.4
+    fullName: Frosinone Calcio S.r.l.
+    names:
+    - Frosinone
+    nickname: I Canarini
+    colors:
+    - ublue
+    - uyellow
+  - rating: 72.1
+    fullName: Modena Football Club 2018 S.r.l.
+    names:
+    - Modena
+    nickname: I Geminiani
+    colors:
+    - uyellow
+    - ublue
+  - rating: 71.9
+    fullName: Associazione Calcio Reggiana S.r.l.
+    names:
+    - Reggiana
+    nickname: Teste Quadre
+    colors:
+    - dred
+    - ublue
+  - rating: 71.8
+    fullName: Mantova 1911 S.r.l.
+    names:
+    - Mantova
+    nickname: I Virgiliani
+    colors:
+    - uwhite
+    - ured
+  - rating: 71.8
+    fullName: Carrarese Calcio 1908 S.r.l.
+    names:
+    - Carrarese
+    nickname: I Marmiferi
+    colors:
+    - ublue
+    - uyellow
+  - rating: 71.7
+    fullName: Calcio Padova S.p.A.
+    names:
+    - Padova
+    nickname: I Biancoscudati
+    colors:
+    - uwhite
+    - ured
+  - rating: 71.6
+    fullName: Virtus Entella S.r.l.
+    names:
+    - Virtus Entella
+    nickname: I Diavoli Neri
+    colors:
+    - uwhite
+    - ucyan
+  - rating: 71.6
+    fullName: Unione Sportiva Avellino 1912
+    names:
+    - Avellino
+    nickname: Lupi
+    colors:
+    - uwhite
+    - ugreen
+  - rating: 71.3
+    fullName: Delfino Pescara 1936 S.p.A.
+    names:
+    - Pescara
+    nickname: I Delfini
+    colors:
+    - lblue
+    - uwhite
+- name: LaLiga EA Sports
+  nation: Spain
+  clubs:
+  - rating: 85.4
+    fullName: Fútbol Club Barcelona
+    names:
+    - Barcelona
+    - Barca
+    nickname: Els Culés
+    colors:
+    - dred
+    - dblue
+  - rating: 84.5
+    fullName: Real Madrid Club de Fútbol S.A.D.
+    names:
+    - Real Madrid
+    nickname: Los Blancos
+    colors:
+    - uwhite
+    - ugold
+  - rating: 82.7
+    fullName: Club Atlético de Madrid S.A.D.
+    names:
+    - Atlético de Madrid
+    - Atletico de Madrid
+    - Atletico Madrid
+    nickname: Los Colchoneros
+    colors:
+    - ured
+    - uwhite
+  - rating: 81.1
+    fullName: Villarreal Club de Fútbol S.A.D.
+    names:
+    - Villareal
+    nickname: El Submarino Amarillo
+    colors:
+    - uyellow
+    - ublue
+  - rating: 80.9
+    fullName: Athletic Club S.A.D.
+    names:
+    - Athletic Bilbao
+    - Athletic Club
+    nickname: Los Leones
+    colors:
+    - ured
+    - uwhite
+  - rating: 79.6
+    fullName: Real Betis Balompié S.A.D.
+    names:
+    - Real Betis
+    - Betis
+    nickname: Los Verdiblancos
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 79.0
+    fullName: Club Atlético Osasuna
+    names:
+    - Osasuna
+    nickname: Los Rojillos
+    colors:
+    - ured
+    - ublue
+  - rating: 78.8
+    fullName: Real Club Celta de Vigo S.A.D.
+    names:
+    - Celta Vigo
+    - Vigo
+    nickname: Los Celestes
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 78.5
+    fullName: Real Sociedad de Fútbol S.A.D.
+    names:
+    - Real Sociedad
+    - Sociedad
+    nickname: La Real
+    colors:
+    - ublue
+    - uwhite
+  - rating: 78.4
+    fullName: Valencia Club de Fútbol S.A.D.
+    names:
+    - Valencia
+    nickname: Los Che
+    colors:
+    - uwhite
+    - ured
+  - rating: 77.9
+    fullName: Rayo Vallecano de Madrid S.A.D.
+    names:
+    - Rayo Vallecano
+    nickname: Los Franjirrojos
+    colors:
+    - uwhite
+    - dred
+  - rating: 77.5
+    fullName: Deportivo Alavés S.A.D.
+    names:
+    - Deportivo Alavés
+    - Deportivo Alaves
+    - Alaves
+    nickname: Los Babazorros
+    colors:
+    - ublue
+    - uwhite
+  - rating: 77.5
+    fullName: Real Club Deportivo Mallorca S.A.D.
+    names:
+    - Mallorca
+    nickname: Los Bermellones
+    colors:
+    - ured
+    - ublack
+  - rating: 77.3
+    fullName: Sevilla Fútbol Club S.A.D.
+    names:
+    - Sevilla
+    nickname: Los Nervionenses
+    colors:
+    - uwhite
+    - ured
+  - rating: 77.2
+    fullName: Girona Fútbol Club S.A.D.
+    names:
+    - Girona
+    nickname: Els Gironins
+    colors:
+    - ured
+    - uwhite
+  - rating: 77.2
+    fullName: Reial Club Deportiu Espanyol de Barcelona S.A.D.
+    names:
+    - Espanyol
+    nickname: Los Periquitos
+    colors:
+    - ublue
+    - uwhite
+  - rating: 76.9
+    fullName: Getafe Club de Fútbol S.A.D.
+    names:
+    - Getafe
+    nickname: Los Azulones
+    colors:
+    - dblue
+    - uwhite
+  - rating: 76.8
+    fullName: Levante Unión Deportiva S.A.D.
+    names:
+    - Levante
+    nickname: Los Granotas
+    colors:
+    - dblue
+    - ured
+  - rating: 76.6
+    fullName: Elche Club de Fútbol S.A.D.
+    names:
+    - Elche
+    nickname: Los Franjiverdes
+    colors:
+    - uwhite
+    - ugreen
+  - rating: 76.6
+    fullName: Real Oviedo S.A.D.
+    names:
+    - Real Oviedo
+    - Oviedo
+    nickname: Los Carbayones
+    colors:
+    - ublue
+    - uwhite
+- name: Bundesliga
+  nation: Germany
+  clubs:
+  - rating: 84.4
+    fullName: Fußball-Club Bayern München e.V.
+    names:
+    - Bayern München
+    - Bayern Munchen
+    - Bayern Munich
+    - Bayern
+    nickname: Die Roten
+    colors:
+    - ured
+    - uwhite
+  - rating: 82.3
+    fullName: Bayer 04 Leverkusen Fußball GmbH
+    names:
+    - Bayer Leverkusen
+    - Bayer
+    - Leverkusen
+    nickname: Die Werkself
+    colors:
+    - ured
+    - ublack
+  - rating: 82.3
+    fullName: Ballspielverein Borussia 09 e.V. Dortmund
+    names:
+    - Borussia Dortmund
+    nickname: Die Schwarzgelben
+    colors:
+    - uyellow
+    - ublack
+  - rating: 80.3
+    fullName: Eintracht Frankfurt Fußball AG
+    names:
+    - Eintracht Frankfurt
+    - Eintracht
+    nickname: Die Adler
+    colors:
+    - ured
+    - ublack
+  - rating: 79.8
+    fullName: Verein für Bewegungsspiele Stuttgart 1893 e.V.
+    names:
+    - Stuttgart
+    nickname: Die Roten
+    colors:
+    - ured
+    - uwhite
+  - rating: 79.7
+    fullName: RasenBallsport Leipzig GmbH
+    names:
+    - RB Leipzig
+    - Leipzig
+    nickname: Die Roten Bullen
+    colors:
+    - uwhite
+    - ured
+  - rating: 79.1
+    fullName: 1. Fußball- und Sportverein Mainz 05 e.V.
+    names:
+    - Mainz
+    - Mainz 05
+    nickname: Die Nullfünfer
+    colors:
+    - ured
+    - uwhite
+  - rating: 78.5
+    fullName: Sport-Club Freiburg e.V.
+    names:
+    - Freiburg
+    nickname: Breisgau-Brasilianer
+    colors:
+    - ublack
+    - uwhite
+  - rating: 78.5
+    fullName: Sportverein Werder Bremen von 1899 e.V.
+    names:
+    - Werder Bremen
+    - Werder
+    - Bremen
+    nickname: Die Grün-Weißen
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 77.6
+    fullName: Verein für Leibesübungen Wolfsburg e.V.
+    names:
+    - Wolfsburg
+    nickname: Die Wölfe
+    colors:
+    - ygreen
+    - uwhite
+  - rating: 77.3
+    fullName: Borussia Verein für Leibesübungen 1900 e.V. Mönchengladbach
+    names:
+    - Borussia Mönchengladbach
+    - Borussia Monchengladbach
+    - Borussia M'gladbach
+    - Borussia Gladbach
+    - M'gladbach
+    - Gladbach
+    nickname: Die Fohlen
+    colors:
+    - ublack
+    - uwhite
+  - rating: 77.0
+    fullName: Fußball-Club Augsburg 1907 e.V.
+    names:
+    - Augsburg
+    nickname: Die Fuggerstädter
+    colors:
+    - uwhite
+    - ured
+  - rating: 76.9
+    fullName: 1. Fußball-Union Berlin e.V.
+    names:
+    - Union Berlin
+    - Union
+    nickname: Die Eisernen
+    colors:
+    - ured
+    - uwhite
+  - rating: 76.7
+    fullName: Turn- und Sportgemeinschaft 1899 Hoffenheim e.V.
+    names:
+    - Hoffenheim
+    nickname: Die Kraichgauer
+    colors:
+    - ublue
+    - uwhite
+  - rating: 75.8
+    fullName: Fußball-Club Sankt Pauli von 1910 e.V.
+    names:
+    - Sankt Pauli
+    - St. Pauli
+    - St Pauli
+    nickname: Die Kiezkicker
+    colors:
+    - ubrown
+    - uwhite
+  - rating: 75.8
+    fullName: Hamburger Sport-Verein e.V.
+    names:
+    - Hamburger
+    - Hamburg
+    nickname: Die Rothosen
+    colors:
+    - uwhite
+    - ured
+  - rating: 75.6
+    fullName: 1. Fußball-Club Heidenheim 1846 e.V.
+    names:
+    - 1. Heidenheim
+    - Heidenheim
+    nickname: Die Blauen
+    colors:
+    - ured
+    - ublue
+  - rating: 75.5
+    fullName: 1. Fußball-Club Köln 01/07 e.V.
+    names:
+    - 1. Köln
+    - 1. Koln
+    - Koln
+    - Cologne
+    nickname: Die Geißböcke
+    colors:
+    - uwhite
+    - ured
+- name: Ligue 1 McDonald's
+  nation: France
+  clubs:
+  - rating: 86.5
+    fullName: Paris Saint-Germain Football Club S.A.
+    names:
+    - Paris Saint-Germain
+    - PSG
+    - Paris Saint Germain
+    nickname: Les Parisiens
+    colors:
+    - dblue
+    - ured
+  - rating: 81.4
+    fullName: Lille Olympique Sporting Club S.A.
+    names:
+    - LOSC Lille
+    - LOSC
+    - Lille
+    nickname: Les Dogues
+    colors:
+    - ured
+    - uwhite
+  - rating: 81.1
+    fullName: Association Sportive de Monaco S.A.M.
+    names:
+    - Monaco
+    - AS Monaco
+    nickname: Les Rouge et Blanc
+    colors:
+    - dred
+    - uwhite
+  - rating: 80.8
+    fullName: Olympique Lyonnais Groupe S.A.
+    names:
+    - Olimpique Lyonnais
+    - Olimpique Lyon
+    - OL
+    - Lyon
+    nickname: Les Gones
+    colors:
+    - uwhite
+    - ured
+  - rating: 80.8
+    fullName: Olympique de Marseille S.A.
+    names:
+    - Olimpique Marseille
+    - OM
+    nickname: Les Phocéens
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 79.7
+    fullName: Olympique Gymnaste Club Nice Côte d'Azur S.A.
+    names:
+    - Nice
+    nickname: Les Aiglons
+    colors:
+    - ublack
+    - ured
+  - rating: 79.4
+    fullName: Racing Club de Strasbourg Alsace S.A.
+    names:
+    - Strasbourg
+    nickname: Les Bleus et Blancs
+    colors:
+    - lblue
+    - uwhite
+  - rating: 79.1
+    fullName: Racing Club de Lens S.A.
+    names:
+    - Lens
+    nickname: Les Sang et Or
+    colors:
+    - uyellow
+    - ured
+  - rating: 78.7
+    fullName: Stade Brestois 29 S.A.
+    names:
+    - Brest
+    nickname: Les Pirates
+    colors:
+    - ured
+    - uwhite
+  - rating: 78.4
+    fullName: Stade Rennais Football Club S.A.
+    names:
+    - Rennes
+    nickname: Les Rouges et Noirs
+    colors:
+    - ured
+    - ublack
+  - rating: 78.0
+    fullName: Toulouse Football Club S.A.
+    names:
+    - Toulouse
+    nickname: Les Violets
+    colors:
+    - uviolet
+    - uwhite
+  - rating: 77.3
+    fullName: Association de la Jeunesse Auxerroise S.A.
+    names:
+    - Auxerre
+    nickname: Les AJA
+    colors:
+    - uwhite
+    - ured
+  - rating: 76.4
+    fullName: Football Club de Nantes S.A.
+    names:
+    - Nantes
+    nickname: Les Canaris
+    colors:
+    - uyellow
+    - ugreen
+  - rating: 75.8
+    fullName: Angers Sporting Club de l'Ouest S.A.
+    names:
+    - Angers
+    nickname: Les Scoïstes
+    colors:
+    - ublack
+    - uwhite
+  - rating: 75.5
+    fullName: Football Club Lorient Bretagne Sud S.A.
+    names:
+    - Lorient
+    nickname: Les Merlus
+    colors:
+    - uorange
+    - uwhite
+  - rating: 75.4
+    fullName: Paris Football Club S.A.
+    names:
+    - Paris
+    - Paris FC
+    nickname: Les Parisiens
+    colors:
+    - dblue
+    - uwhite
+  - rating: 75.4
+    fullName: Havre Athletic Club Football Association S.A.
+    names:
+    - Le Havre
+    - Havre
+    nickname: Les Ciel et Marine
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 75.3
+    fullName: Football Club de Metz S.A.
+    names:
+    - Metz
+    nickname: Les Grenats
+    colors:
+    - dred
+    - uwhite
+- name: VriendenLoterij Eredivisie
+  nation: Netherlands
+  clubs:
+  - rating: 81.5
+    fullName: Philips Sport Vereniging N.V.
+    names:
+    - PSV
+    nickname: De Boeren
+    colors:
+    - uwhite
+    - ured
+  - rating: 80.0
+    fullName: Feyenoord Rotterdam N.V.
+    names:
+    - Feyenoord
+    nickname: De Club van het Volk
+    colors:
+    - ured
+    - uwhite
+  - rating: 78.3
+    fullName: Amsterdamsche Football Club Ajax N.V.
+    names:
+    - Ajax
+    nickname: De Godenzonen
+    colors:
+    - uwhite
+    - dred
+  - rating: 77.7
+    fullName: Alkmaar Zaanstreek N.V.
+    names:
+    - AZ
+    - AZ Alkmaar
+    nickname: De Kaaskoppen
+    colors:
+    - ured
+    - uwhite
+  - rating: 76.3
+    fullName: Football Club Utrecht N.V.
+    names:
+    - Utrecht
+    nickname: Utreg
+    colors:
+    - uwhite
+    - ured
+  - rating: 76.1
+    fullName: Football Club Twente '65 N.V.
+    names:
+    - Twente
+    - Enschede
+    nickname: De Tukkers
+    colors:
+    - ured
+    - uwhite
+  - rating: 74.4
+    fullName: Nijmegen Eendracht Combinatie N.V.
+    names:
+    - NEC Nijmegen
+    - NEC
+    - Nijmegen
+    nickname: De N.E.C.
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 74.3
+    fullName: Go Ahead Eagles Deventer N.V.
+    names:
+    - Go Ahead Eagles
+    - Eagles
+    nickname: De Koempels
+    colors:
+    - uyellow
+    - ublack
+  - rating: 73.7
+    fullName: Sparta Rotterdam N.V.
+    names:
+    - Sparta Rotterdam
+    nickname: De Kasteelheren
+    colors:
+    - uwhite
+    - ured
+  - rating: 73.2
+    fullName: Prins Hendrik Ende Desespereert Nimmer Combinatie Zwolle N.V.
+    names:
+    - PEC Zwolle
+    - PEC
+    nickname: De Blauwvingers
+    colors:
+    - ublue
+    - uwhite
+  - rating: 72.8
+    fullName: Sportclub Heerenveen N.V.
+    names:
+    - Heerenven
+    nickname: De Superfriezen
+    colors:
+    - ublue
+    - uwhite
+  - rating: 72.2
+    fullName: Groningen Football Club N.V.
+    names:
+    - Groningen
+    nickname: De Trots van het Noorden
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 72.1
+    fullName: Heracles Almelo N.V.
+    names:
+    - Heracles Almelo
+    - Heracles
+    - Almelo
+    nickname: Heraclieden
+    colors:
+    - ublack
+    - uwhite
+  - rating: 72.0
+    fullName: Fortuna Sittard N.V.
+    names:
+    - Fortuna Sittard
+    - Sittard
+    nickname: De Fortunezen
+    colors:
+    - uyellow
+    - ublack
+  - rating: 70.5
+    fullName: Excelsior Rotterdam N.V.
+    names:
+    - Excelsior
+    nickname: De Kralingers
+    colors:
+    - ublack
+    - ured
+  - rating: 70.4
+    fullName: Football Club Volendam N.V.
+    names:
+    - Volendam
+    nickname: Het Andere Oranje
+    colors:
+    - uorange
+    - uwhite
+  - rating: 70.3
+    fullName: Nac Breda N.V.
+    names:
+    - Breda
+    - NAC Breda
+    nickname: De Parel van het Zuiden
+    colors:
+    - uyellow
+    - ublack
+  - rating: 69.9
+    fullName: Telstar N.V.
+    names:
+    - Telstar
+    nickname: De Witte Leeuwen
+    colors:
+    - uwhite
+    - ublack
+- name: Liga Portugal Betclic
+  nation: Portugal
+  clubs:
+  - rating: 82.4
+    fullName: Sport Lisboa e Benfica SAD
+    names:
+    - Benfica
+    - SLB
+    nickname: As Águias
+    colors:
+    - ured
+    - uwhite
+  - rating: 82.1
+    fullName: Sporting Clube de Portugal SAD
+    names:
+    - Sporting
+    - Sporting Lisbon
+    nickname: Os Leões
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 79.2
+    fullName: Futebol Clube do Porto SAD
+    names:
+    - Porto
+    nickname: Os Dragões
+    colors:
+    - ublue
+    - uwhite
+  - rating: 78.7
+    fullName: Sporting Clube de Braga SAD
+    names:
+    - Braga
+    nickname: Os Arsenalistas
+    colors:
+    - ured
+    - uwhite
+  - rating: 77.0
+    fullName: Vitória Sport Clube SAD
+    names:
+    - Vitória
+    - Vitoria
+    - Vitoria Guimaraes
+    nickname: Os Vimaranenses
+    colors:
+    - uwhite
+    - ured
+  - rating: 75.4
+    fullName: Futebol Clube de Famalicão SAD
+    names:
+    - Famalicão
+    - Famalicao
+    nickname: Os Famalicenses
+    colors:
+    - uwhite
+    - ured
+  - rating: 75.2
+    fullName: Clube Desportivo Santa Clara SAD
+    names:
+    - Santa Clara
+    nickname: Os Açoreanos
+    colors:
+    - ured
+    - uwhite
+  - rating: 74.4
+    fullName: Grupo Desportivo Estoril Praia SAD
+    names:
+    - Estoril Praia
+    - Estoril
+    - Praia
+    nickname: Os Canarinhos
+    colors:
+    - uyellow
+    - ublue
+  - rating: 74.2
+    fullName: Moreirense Futebol Clube SAD
+    names:
+    - Moreirense
+    nickname: Os Verdes e Brancos
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 74.2
+    fullName: Futebol Clube de Arouca SAD
+    names:
+    - Arouca
+    nickname: Os Arouquenses
+    colors:
+    - uyellow
+    - ublack
+  - rating: 74.0
+    fullName: Casa Pia Atlético Clube SAD
+    names:
+    - Casa Pia
+    nickname: Os Gansos
+    colors:
+    - ublack
+    - uwhite
+  - rating: 73.9
+    fullName: Rio Ave Futebol Clube SAD
+    names:
+    - Rio Ave
+    nickname: Os Rioavistas
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 73.4
+    fullName: Gil Vicente Futebol Clube SAD
+    names:
+    - Gil Vicente
+    - Gil
+    - Vicente
+    nickname: Os Galos
+    colors:
+    - dred
+    - uwhite
+  - rating: 73.0
+    fullName: Clube Desportivo Tondela SAD
+    names:
+    - Tondela
+    nickname: Os Auriverdes
+    colors:
+    - uyellow
+    - ugreen
+  - rating: 72.8
+    fullName: Futebol Clube Alverca SAD
+    names:
+    - Alverca
+    nickname: Os Alverquenses
+    colors:
+    - dblue
+    - uwhite
+  - rating: 72.7
+    fullName: Club Sport Marítimo SAD
+    names:
+    - Nacional Madeira
+    - Madeira
+    nickname: Os Marítimos
+    colors:
+    - uwhite
+    - ured
+  - rating: 71.7
+    fullName: Clube de Futebol Estrela da Amadora SAD
+    names:
+    - Estrela da Amadora
+    nickname: Os Tricolores
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 71.5
+    fullName: Agrupamento Vertical de Sportinguistas SAD
+    names:
+    - AVS
+    nickname: Os Sportinguistas
+    colors:
+    - ured
+    - uwhite
+- name: Jupiler Pro League
+  nation: Belgium
+  clubs:
+  - rating: 81.6
+    fullName: Club Brugge Koninklijke Voetbalvereniging N.V.
+    names:
+    - Club Brugge
+    nickname: Blauw-Zwart
+    colors:
+    - ublue
+    - ublack
+  - rating: 81.4
+    fullName: Royale Union Saint-Gilloise N.V.
+    names:
+    - Union Saint-Gilloise
+    - Union Saint Gilloise
+    - Union SG
+    - USG
+    nickname: Les Unionistes
+    colors:
+    - uyellow
+    - ublue
+  - rating: 78.6
+    fullName: Koninklijke Racing Club Genk N.V.
+    names:
+    - Genk
+    nickname: De Smurfen
+    colors:
+    - ublue
+    - uwhite
+  - rating: 77.3
+    fullName: Royal Sporting Club Anderlecht N.V.
+    names:
+    - Anderlecht
+    nickname: Les Mauves
+    colors:
+    - uviolet
+    - uwhite
+  - rating: 76.1
+    fullName: Royal Antwerp Football Club N.V.
+    names:
+    - Antwerp
+    - Royal Antwerp
+    nickname: The Great Old
+    colors:
+    - ured
+    - uwhite
+  - rating: 76.0
+    fullName: Royal Charleroi Sporting Club N.V.
+    names:
+    - Chaleroi
+    - Sporting Chaleroi
+    nickname: Les Zèbres
+    colors:
+    - uwhite
+    - ublack
+  - rating: 74.6
+    fullName: Koninklijke Voetbalclub Mechelen N.V.
+    names:
+    - Mechelen
+    nickname: De Kakkers
+    colors:
+    - uyellow
+    - ured
+  - rating: 74.6
+    fullName: Koninklijke Atletiek Associatie Gent N.V.
+    names:
+    - Gent
+    - KAA Gent
+    nickname: De Buffalo's
+    colors:
+    - ublue
+    - uwhite
+  - rating: 74.5
+    fullName: Koninklijke Voetbalclub Westerlo N.V.
+    names:
+    - Westerlo
+    - KVC Westerlo
+    nickname: Het Kempisch
+    colors:
+    - uyellow
+    - ublue
+  - rating: 74.0
+    fullName: Cercle Brugge Koninklijke Sportvereniging N.V.
+    names:
+    - Cercle Brugge
+    nickname: Groen-Zwart
+    colors:
+    - ugreen
+    - ublack
+  - rating: 73.9
+    fullName: Koninklijke Sint-Truidense Voetbalvereniging N.V.
+    names:
+    - Sint-Truiden
+    - Sint Truiden
+    - Truiden
+    - STVV
+    nickname: De Kanaries
+    colors:
+    - uyellow
+    - uwhite
+  - rating: 73.5
+    fullName: Koninklijke Voetbalclub Zulte Waregem N.V.
+    names:
+    - Zulte Waregem
+    - Zulte
+    - Waregem
+    nickname: Essevee
+    colors:
+    - dred
+    - uwhite
+  - rating: 73.4
+    fullName: Royal Standard de Liège N.V.
+    names:
+    - Standard Liège
+    - Standard Liege
+    - Standard
+    - Liege
+    nickname: Les Rouches
+    colors:
+    - ured
+    - uwhite
+  - rating: 73.3
+    fullName: Oud-Heverlee Leuven N.V.
+    names:
+    - Oud-Heverlee Leuven
+    - OH Leuven
+    - Leuven
+    nickname: De Brusselse
+    colors:
+    - uwhite
+    - ublack
+  - rating: 73.3
+    fullName: Royal Athletic Association Louviéroise N.V.
+    names:
+    - La Louvière
+    - La Louviere
+    - RAAL La Louviere
+    - RAAL
+    nickname: Les Loups
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 73.2
+    fullName: Football Club Verbroedering Dender N.V.
+    names:
+    - Dender
+    nickname: Denderleeuw
+    colors:
+    - ublue
+    - uwhite
+- name: Trendyol Süper Lig
+  nation: Türkiye
+  clubs:
+  - rating: 80.0
+    fullName: Galatasaray Spor Kulübü A.Ş.
+    names:
+    - Galatasaray
+    nickname: Aslanlar
+    colors:
+    - uorange
+    - uyellow
+  - rating: 79.0
+    fullName: Fenerbahçe Spor Kulübü A.Ş.
+    names:
+    - Fenerbahçe
+    - Fenerbahce
+    nickname: Sarı Kanaryalar
+    colors:
+    - uyellow
+    - ublue
+  - rating: 75.2
+    fullName: Beşiktaş Jimnastik Kulübü A.Ş.
+    names:
+    - Beşiktaş
+    - Besiktas
+    nickname: Kara Kartallar
+    colors:
+    - uwhite
+    - ublack
+  - rating: 74.2
+    fullName: Trabzonspor Kulübü A.Ş.
+    names:
+    - Trabzonspor
+    nickname: Karadeniz Fırtınası
+    colors:
+    - lbrown
+    - ublue
+  - rating: 73.8
+    fullName: İstanbul Başakşehir Futbol Kulübü A.Ş.
+    names:
+    - İstanbul Başakşehir
+    - Instambul Basaksehir
+    - Basaksehir
+    nickname: Boz Baykuşlar
+    colors:
+    - uorange
+    - uwhite
+  - rating: 73.6
+    fullName: Samsunspor Kulübü A.Ş.
+    names:
+    - Samsunspor
+    nickname: Kırmızı Şimşekler
+    colors:
+    - ured
+    - uwhite
+  - rating: 73.0
+    fullName: Göztepe Spor Kulübü A.Ş.
+    names:
+    - Göztepe
+    - Goztepe
+    nickname: Göz Göz
+    colors:
+    - dred
+    - uwhite
+  - rating: 72.8
+    fullName: Kasımpaşa Spor Kulübü A.Ş.
+    names:
+    - Kasımpaşa
+    - Kasimpasa
+    nickname: Apaçiler
+    colors:
+    - dblue
+    - uwhite
+  - rating: 72.5
+    fullName: Alanyaspor Kulübü A.Ş.
+    names:
+    - Alanyaspor
+    nickname: Akrep
+    colors:
+    - uwhite
+    - uorange
+  - rating: 72.4
+    fullName: Çaykur Rizespor Kulübü A.Ş.
+    names:
+    - Rizespor
+    nickname: Atlılar
+    colors:
+    - lblue
+    - uwhite
+  - rating: 72.2
+    fullName: Konyaspor Kulübü A.Ş.
+    names:
+    - Konyaspor
+    nickname: Anadolu Kartalı
+    colors:
+    - dgreen
+    - uwhite
+  - rating: 72.0
+    fullName: Kayserispor Kulübü A.Ş.
+    names:
+    - Kayserispor
+    nickname: Anadolu Yıldızı
+    colors:
+    - uyellow
+    - ured
+  - rating: 71.9
+    fullName: Eyüpspor Kulübü A.Ş.
+    names:
+    - Eyüpspor
+    - Eyupspor
+    nickname: Sarı Melekler
+    colors:
+    - uviolet
+    - uwhite
+  - rating: 71.9
+    fullName: Gaziantep Futbol Kulübü A.Ş.
+    names:
+    - Gaziantep
+    nickname: Şahinler
+    colors:
+    - ured
+    - uwhite
+  - rating: 71.7
+    fullName: Gençlerbirliği Spor Kulübü A.Ş.
+    names:
+    - Gençlerbirliği
+    - Genclerbirligi
+    nickname: Ankara Rüzgarı
+    colors:
+    - ured
+    - uwhite
+  - rating: 71.6
+    fullName: Kocaelispor Kulübü A.Ş.
+    names:
+    - Kocaelispor
+    nickname: Yeşil Şimşekler
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 71.5
+    fullName: Fatih Karagümrük Spor Kulübü A.Ş.
+    names:
+    - Fatih Karagümrük
+    - Fatih Karagumruk
+    - Fatih
+    nickname: Karagümrük
+    colors:
+    - dred
+    - uwhite
+  - rating: 71.1
+    fullName: Antalyaspor Kulübü A.Ş.
+    names:
+    - Antalyaspor
+    nickname: Akrepler
+    colors:
+    - uwhite
+    - ured
+- name: Mir Russian Premier League
+  nation: Russia
+  clubs:
+  - rating: 77.8
+    fullName: Futbolniy Klub Zenit
+    names:
+    - Zenit
+    - Zenit SPb
+    nickname: Sine-belo-golybye
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 76.4
+    fullName: Professionalniy Futbolniy Klub CSKA
+    names:
+    - CSKA Moscow
+    - CSKA Moskva
+    - CSKA M
+    nickname: Koni
+    colors:
+    - ured
+    - ublue
+  - rating: 76.2
+    fullName: Futbolniy Klub Krasnodar
+    names:
+    - Krasnodar
+    nickname: Byki
+    colors:
+    - dgreen
+    - uwhite
+  - rating: 75.8
+    fullName: Futbolniy Klub Spartak Moskva
+    names:
+    - Spartak Moscow
+    - Spartak Moskva
+    - Spartak M
+    nickname: Krasno-Belye
+    colors:
+    - ured
+    - uwhite
+  - rating: 75.1
+    fullName: Futbolniy Klub Dinamo Moskva
+    names:
+    - Dinamo Moscow
+    - Dinamo Moskva
+    - Dinamo M
+    nickname: Belo-golybye
+    colors:
+    - uwhite
+    - lblue
+  - rating: 74.6
+    fullName: Futbolniy Klub Lokomotiv Moskva
+    names:
+    - Lokomotiv Moscow
+    - Loko M
+    nickname: Zheleznodorozhniki
+    colors:
+    - dgreen
+    - ured
+  - rating: 73.1
+    fullName: Futbolniy Klub Rostov
+    names:
+    - Rostov
+    nickname: Zhyolto-siniye
+    colors:
+    - uyellow
+    - ublue
+  - rating: 72.7
+    fullName: Futbolniy Klub Rubin Kazan
+    names:
+    - Rubin Kazan
+    - Rubin K
+    nickname: Kazantsy
+    colors:
+    - dred
+    - uwhite
+  - rating: 71.5
+    fullName: Futbolniy Klub Baltika Kaliningrad
+    names:
+    - Baltika
+    nickname: Kaliningradtsy
+    colors:
+    - lblue
+    - uwhite
+  - rating: 71.3
+    fullName: Futbolniy Klub Dinamo Makhachkala
+    names:
+    - Dinamo Makhachkala
+    - Dinamo Mkh
+    nickname: Gortsy
+    colors:
+    - ublue
+    - uwhite
+  - rating: 71.2
+    fullName: Futbolniy Klub Akron Tolyatti
+    names:
+    - Akron Tolyatti
+    - Akron
+    nickname: Zhigulyovtsy
+    colors:
+    - ured
+    - uwhite
+  - rating: 70.9
+    fullName: Respublikanskiy Futbolniy Kulb Akhmat
+    names:
+    - Akhmat Grozny
+    - Akhmat
+    nickname: Chechentsy
+    colors:
+    - ugreen
+    - uwhite
+  - rating: 70.8
+    fullName: Professionalniy Futbolniy Klub Krylya Sovetov Samara
+    names:
+    - Krylya Sovetov
+    - Krylya
+    nickname: Krylya
+    colors:
+    - ucyan
+    - uwhite
+  - rating: 70.1
+    fullName: Futbolniy Klub Sochi
+    names:
+    - Sochi
+    nickname: Leopardy
+    colors:
+    - ublue
+    - uwhite
+  - rating: 69.8
+    fullName: Futbolniy Klub Orenburg
+    names:
+    - Orenburg
+    nickname: Orenburzhtsy
+    colors:
+    - dblue
+    - uwhite
+  - rating: 69.5
+    fullName: Futbolniy Klub Pari Nizhny Novgorod
+    names:
+    - Pari NN
+    - Pari Nizhny Novgorod
+    - Nizhny Novgorod
+    - NN
+    nickname: Volgary
+    colors:
+    - ucyan
+    - uwhite
