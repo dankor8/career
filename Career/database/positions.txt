@@ -1,0 +1,9 @@
+ST + striker + ured + .2, .3, .14, .16, .02, .18, 0, 0 + .7
+LW + left winger + rorange + .25, .19, .2, .25, .04, .06, .01, 0 + 0
+RW + right winger + rorange + .25, .19, .2, .25, .04, .06, 0, .01 + -.2
+CAM + attacking midfielder + dyellow + .18, .15, .25, .23, .04, .15, 0, 0 + 1
+CM + center midfielder + uyellow + .16, .1, .32, .12, .12, .18, 0, 0 + 1.5
+CDM + defensive midfielder + gyellow + .08, .08, .26, .06, .3, .22, 0, 0 + 1
+LB + left back + ygreen + .22, .05, .2, .2, .2, .12, .01, .0 + 1
+RB + right back + ygreen + .22, .05, .2, .2, .2, .12, .0, .01 + .8
+CB + center back + dgreen + .12, .04, .16, .04, .36, .28, 0, 0 + 0
