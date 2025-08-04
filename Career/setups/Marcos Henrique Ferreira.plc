@@ -1,0 +1,25 @@
+It's not recommended to edit anything here.
+If you ignore this warning, you can damage your save file beyond repair.
+
+{
+    "hero": {
+        "fullName": "Marcos Henrique Ferreira",
+        "shirtName": "Marcos",
+        "nation": 5,
+        "pac": 40,
+        "sho": 50,
+        "pas": 60,
+        "dri": 60,
+        "dfn": 50,
+        "phy": 40,
+        "foot": "left",
+        "traits": [
+            12,
+            13,
+            14
+        ],
+        "age": 16
+    },
+    "time": 1752761200.941833,
+    "hash": "19e4dcb7202362889711c442d5e36e2009e38bf7e86c2e73c01a47ff"
+}

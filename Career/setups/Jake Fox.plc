@@ -1,0 +1,25 @@
+It's not recommended to edit anything here.
+If you ignore this warning, you can damage your save file beyond repair.
+
+{
+    "hero": {
+        "fullName": "Jake Fox",
+        "shirtName": "Fox",
+        "nation": 29,
+        "pac": 80,
+        "sho": 60,
+        "pas": 50,
+        "dri": 60,
+        "dfn": 20,
+        "phy": 30,
+        "foot": "left",
+        "traits": [
+            8,
+            12,
+            14
+        ],
+        "age": 16
+    },
+    "time": 1752691225.279972,
+    "hash": "8c295eb7fbb4acfef4ab34ba9b4f1e04615538a004fe7b619db034bb"
+}

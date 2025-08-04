@@ -1,0 +1,25 @@
+It's not recommended to edit anything here.
+If you ignore this warning, you can damage your save file beyond repair.
+
+{
+    "hero": {
+        "fullName": "Mohan Dasari",
+        "shirtName": "Dasari",
+        "nation": 127,
+        "pac": 50,
+        "sho": 20,
+        "pas": 70,
+        "dri": 70,
+        "dfn": 60,
+        "phy": 30,
+        "foot": "right",
+        "traits": [
+            11,
+            18,
+            25
+        ],
+        "age": 16
+    },
+    "time": 1752760414.060633,
+    "hash": "3ee8de0e54f54d491d761467c4c879b46adfd985b0b4fea89489d9b8"
+}
