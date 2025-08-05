@@ -1,0 +1,16 @@
+- name: View preliminary progress bars
+  description: Shows progress bars when launching the application if set to Yes. Doesn't
+    affect other progress bars.
+  setTo: 'Yes'
+  values:
+  - 'Yes'
+  - 'No'
+- name: Unban Russia
+  description: 'Allows Russian clubs to compete in European competitions and the Russian
+    national team to compete in World Cup and Euro qualifiers if set to Yes.
+
+    This feature wasn''t implemented yet.'
+  setTo: 'No'
+  values:
+  - 'Yes'
+  - 'No'
