@@ -1,4 +1,0 @@
-- added tables and integrated them (had to make custom ones and that's a story on its own)
-- added national team, league and club rankings
-- moved all data from JSON and text to YAML
-- added league, club and nation short names
