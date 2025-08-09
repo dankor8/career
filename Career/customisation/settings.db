@@ -1,0 +1,24 @@
+- name: View preliminary progress bars
+  description: Shows progress bars when launching the application if set to Yes. Does
+    not affect other progress bars.
+  setTo: 'Yes'
+  values:
+  - 'Yes'
+  - 'No'
+- name: View exception traceback
+  description: 'Shows exception (error) traceback when one occurs.
+
+    Useful if you are a modder or a developer.'
+  setTo: 'No'
+  values:
+  - 'Yes'
+  - 'No'
+- name: Unban Russia
+  description: 'Allows Russian clubs to compete in European competitions and the Russian
+    national team to compete in World Cup and Euro qualifiers if set to Yes.
+
+    This feature was not implemented yet.'
+  setTo: 'No'
+  values:
+  - 'Yes'
+  - 'No'
