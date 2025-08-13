@@ -212,7 +212,7 @@ def getFiles(directory: str, extensions: list[str] = [FILE_EXTENSION, DATABASE_F
     '''
     return [file for file in listdir(directory) if '.' + file.split('.')[-1] in extensions or not extensions]
 
-def parseDatabase(pathsToCheck: list[str], funcsToCheck: list[function], outputsToReturn: list[str] = []) -> list:
+def parseDatabase(pathsToCheck: list[str], funcsToCheck: list, outputsToReturn: list[str] = []) -> list:
     '''
     Checks that all paths in {pathsToCheck} exist and calls each function in {funcsToCheck}.\n
     Returns the output of a function if the file corresponding to it (taken from the files dictionary) is in {outputsToReturn}.
