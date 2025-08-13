@@ -433,7 +433,7 @@ def yesNoMenu(text, default = 'Yes') -> bool:
 def startingMenu():
     '''
     Creates the starting menu.\n
-    Returns\:\n
+    Returns:\n
     -1: Quit;\n
     1: Load a game;\n
     2: Start a new game with an existing hero;\n
@@ -461,7 +461,7 @@ def startingMenu():
 def rankingsMenu():
     '''
     Creates the rankings menu.\n
-    Returns\:\n
+    Returns:\n
     -1: Quit;\n
     1: Leagues;\n
     2: Nations;\n
@@ -633,10 +633,10 @@ class Settings:
         self.viewProgress = self.newSetting()
         self.excTraceback = self.newSetting()
         self.allowRussia = self.newSetting()
-        inspect(self.viewProgress)
-        inspect(self.excTraceback)
-        inspect(self.allowRussia)
-        origInput()
+        # inspect(self.viewProgress)
+        # inspect(self.excTraceback)
+        # inspect(self.allowRussia)
+        # origInput()
     
     @property
     def settings(self):
@@ -795,19 +795,18 @@ class Table:
         '''        
         if style:
             self.style = style
+            leftStyleKeys = Table.defaultStyle
+            warning = []
+            for key in self.style:
+                try:
+                    del leftStyleKeys[key]
+                except:
+                    warning.append(key)
+            if leftStyleKeys:
+                raise Exception(f'The table\'s style is missing the following key{"s" if len(leftStyleKeys) > 1 else ""}: {", ".join(leftStyleKeys)}.{f" Warning: your style has additional keys that are not necessary ({', '.join(warning)})." if warning else ""}')
         else:
             self.style = Table.defaultStyle
         
-        leftStyleKeys = []
-        warning = []
-        for key in self.style:
-            try:
-                leftStyleKeys.remove(key)
-            except:
-                warning.append(key)
-        if leftStyleKeys:
-            raise Exception(f'Table style is missing the following keys: {", ".join(leftStyleKeys)}.{f" Warning: your style has additional keys that are not necessary ({', '.join(warning)})." if warning else ""}')
-
         self.title = str(title) if title else title
         self.caption = str(caption) if caption else caption
 
