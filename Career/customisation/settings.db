@@ -1,7 +1,7 @@
 - name: View preliminary progress bars
   description: Shows progress bars when launching the application if set to Yes. Does
     not affect other progress bars.
-  setTo: 'Yes'
+  setTo: 'No'
   values:
   - 'Yes'
   - 'No'
@@ -9,7 +9,7 @@
   description: 'Shows exception (error) traceback when one occurs.
 
     Useful if you are a modder or a developer.'
-  setTo: 'No'
+  setTo: 'Yes'
   values:
   - 'Yes'
   - 'No'

@@ -47,7 +47,7 @@ DEV_MODE = False
 
 def input(*message, sep: str = ' ', default: str = "", completer = None) -> str:
     '''
-    Like traditional input() but supports colored text in prompt_toolkit's HTML format.\n
+    Like traditional `input()` but supports colored text in prompt_toolkit's HTML format.\n
     Can print strings, integers, tuples, etc., but not objects.\n
     Be careful when printing anything that contains < and > as these may cause an error in prompt_toolkit.\n
     Returns the string that the user inputs.
@@ -57,7 +57,7 @@ def input(*message, sep: str = ' ', default: str = "", completer = None) -> str:
 
 def print(*values, sep: str = ' ', end: str = '\n') -> None:
     '''
-    Like traditional input() but supports colored text in prompt_toolkit's HTML format.\n
+    Like traditional `input()` but supports colored text in prompt_toolkit's HTML format.\n
     Can print strings, integers, tuples, etc., but not objects.\n
     Be careful when printing anything that contains < and > as these may cause an error in prompt_toolkit.
     '''
@@ -73,18 +73,18 @@ def richFormat(text: str) -> str:
     return text
 
 def colorDoubleText(text: str, color: str) -> list[str]:
-    '''Like colorText() but returns a list of 2 elements: colored usual text and colored capitalised text.'''
+    '''Like `colorText()` but returns a list of 2 elements: colored usual text and colored capitalised text.'''
     return [colorText(text, color), colorText(text.capitalize(), color)]
 
 def uncolorText(text: str) -> str:
-    '''Deletes all HTML color codes from the given string.'''
+    '''Deletes all HTML color codes from `text`.'''
     for code in mainStyleDict.keys():
         text = text.replace(f'<{code}>', '').replace(f'</{code}>', '')
     return text
 
 def alignText(text: str, ucText: str, align: str, width: int, fill = ' ') -> str:
     '''
-    Returns aligned text. Works with colored text, but needs its uncolored version (ucText).\n
+    Returns aligned `text`. Works with colored text, but needs its uncolored version (`ucText`).\n
     Align must be 'left', 'center' or 'right'.
     '''
     newWidth = width + len(text) - len(ucText)
@@ -101,9 +101,9 @@ def alignText(text: str, ucText: str, align: str, width: int, fill = ' ') -> str
 
 def colorSettingValue(value: str, mode: str = 'html') -> str | list | None:
     '''
-    Returns colored setting value (yes in green for yes, no in red for no, etc).\n
-    Mode must be 'html' or 'color'.\n
-    If mode is 'html' (default), returns {value} that is colored using prompt_toolkit's HTML format.
+    Returns colored `value` (Yes in green for Yes, No in red for No, etc).\n
+    `mode` must be 'html' or 'color'.\n
+    If mode is 'html' (default), returns `value` that is colored using prompt_toolkit's HTML format.
     '''
     match mode:
         case 'html':
@@ -131,9 +131,9 @@ def clear() -> None:
 
 def saveData(filePath: str, data, allowExceptions: bool = False) -> bool:
     '''
-    Saves data to {filePath} in YAML.\n
+    Saves `data` to `filePath` in YAML.\n
     Returns True if saving was successful or False if there was an error.\n
-    Raises an Exception instead of returning False if {allowException} is True.
+    Raises an Exception instead of returning False if `allowException` is True.
     '''
     try:
         with open(filePath, 'wb') as f:
@@ -146,10 +146,10 @@ def saveData(filePath: str, data, allowExceptions: bool = False) -> bool:
     
 def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool = False) -> bool:
     '''
-    Loads data in YAML from {filePath}.\n
+    Loads data in YAML from `filePath`.\n
     Returns the data if loading was successful or False if there was an error.\n
-    Raises an Exception instead of returning False if {allowException} is True.\n
-    Saves the first comment (must start on character 1 of the file) to the comments dictionary if {modifyComments} is True.
+    Raises an Exception instead of returning False if `allowException` is True.\n
+    Saves the first comment (must start on character 1 of the file) to the `comments` dictionary if `modifyComments` is True.
     '''
     try:
         with open(filePath, 'r', encoding = 'utf-8') as f:
@@ -167,23 +167,26 @@ def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool =
         return False
 
 def dataToYAML(data) -> bytes:
-    '''Transforms the data to YAML.'''
+    '''Transforms `data` to YAML.'''
     return safe_dump(data, encoding = 'utf-8', allow_unicode = True, sort_keys = False)
 
 def yamlToHash(data: bytes) -> str:
-    '''Hashes the given YAML.'''
+    '''
+    Hashes `data`.
+    `data` must be in YAML.
+    '''
     return sha3_224(data + b'well... you weren\'t supposed to find this.').hexdigest()
 
 def dataToHash(data) -> str:
-    '''Hashes the given data.'''
+    '''Hashes `data`.'''
     return yamlToHash(dataToYAML(data))
 
 def isValidChangeDate(file: str, changeDate) -> bool:
-    '''Checks if the changeDate written in the file matches its system-coded change date.'''
+    '''Checks if `changeDate` matches the system-coded change date of the file.'''
     return getmtime(file) - float(changeDate) < .1
 
 def getTime() -> float:
-    '''Shortcut for datetime.datetime.now.timestamp().'''
+    '''Shortcut for `datetime.datetime.now.timestamp()`.'''
     return datetime.now().timestamp()
 
 ### Database functions
@@ -194,8 +197,8 @@ def getFiles(directory: str, extensions: list[str] = [FILE_EXTENSION, DATABASE_F
 
 def parseDatabase(pathsToCheck: list[str], funcsToCheck: list, outputsToReturn: list[str] = []) -> list:
     '''
-    Checks that all paths in pathsToCheck exist and calls each function in funcsToCheck.\n
-    Returns the output of a function if the file corresponding to it (taken from the files dictionary) is in outputsToReturn.
+    Checks that all paths in `pathsToCheck` exist and calls each function in `funcsToCheck`.\n
+    Returns the output of a function if the file corresponding to it (taken from the files dictionary) is in `outputsToReturn`.
     '''
     def checkPaths(progressBars: bool = True):
         toReturn = []
@@ -240,7 +243,7 @@ def parseDatabase(pathsToCheck: list[str], funcsToCheck: list, outputsToReturn: 
     return toReturn
 
 def createLeagues() -> None:
-    '''Creates all League and Club objects from the files['leagues'] file.'''
+    '''Creates all League and Club objects from `files['leagues']`.'''
     leaguesData = loadData(files['leagues'], modifyComments = True)
     for leagueData in leaguesData:
         leagueData['nation'] = Nation.find(leagueData['nation'], True)
@@ -271,25 +274,25 @@ def createLeagues() -> None:
         raise Exception(f'There {"are" if len(duplicateShortNames) > 1 else "is a"} duplicate club short name{"s" if len(duplicateShortNames) > 1 else ""}: {", ".join(duplicateShortNames)}.')
     
 def createPositions() -> None:
-    '''Creates all Position objects from the files['positions'] file.'''
+    '''Creates all Position objects from `files['positions']`.'''
     positions = loadData(files['positions'])
     for position in positions:
         Position(position['shortName'], position['name'], position['color'], list(position['weightings'].values()), position['modifier'])
 
 def createNations() -> None:
-    '''Creates all Nation objects from the files['nations'] file.'''
+    '''Creates all Nation objects from `files['nations']`.'''
     nations = loadData(files['nations'])
     for i, nation in enumerate(nations, 1):
         Nation(nation['names'], nation['shortName'], nation['nationality'], nation['color'], i)
 
 def createTraits() -> None:
-    '''Creates all Trait objects from the files['traits'] file.'''
+    '''Creates all Trait objects from `files['traits']`.'''
     traits = loadData(files['traits'])
     for trait in traits:
         Trait(trait['name'], trait['description'], trait['color'], trait['category'])
 
 def createStyle() -> dict[str: str]:
-    '''Creates all Style objects from the files['style'] file.'''
+    '''Creates all Style objects from `files['style']`.'''
     data = loadData(files['style'])
     styleDict = {}
     for code, color in data.items():
@@ -301,7 +304,7 @@ def createStyle() -> dict[str: str]:
     return styleDict
 
 def saveSetup(hero) -> None:
-    '''Saves the given hero into a file.'''
+    '''Saves the `hero` to a file.'''
     clear()
     while True:
         filePath = input('<ugreen>Let\'s save your starting setup!</ugreen>\n<uyellow>Choose the name of the file it will be saved in:</uyellow> ', default = hero.ucFullName) + FILE_EXTENSION
@@ -365,7 +368,7 @@ def loadSetup():
 def menu(title: str, options: list, help: str = ' ', default = None):
     '''
     Asks a questionary and returns the chosen answer.\n
-    Options must be instances of MenuOption class.
+    `options` must be instances of the MenuOption class.
     '''
     menuOptions = [Choice(option if isinstance(option, str) else [('class:' + option.color, option.text)], value = option.returnValue, description = option.description.replace('\n', '\n               ') if option.description else option.description) for option in options]
     return questionary(title, menuOptions, instruction = help, qmark = '', style = mainStyle, default = default).ask()
@@ -383,14 +386,14 @@ def raiseFatalError() -> None:
 
 def yesNoMenu(text, default = 'Yes') -> bool:
     '''
-    Creates a simple Yes or No menu with a title of {text} with the pointer set to {default}.\n
+    Creates a simple Yes or No menu with a title of `text` and with the pointer set to `default`.\n
     Returns True if Yes was chosen and False otherwise.
     '''
     options = [MenuOption('Yes', color = 'ugreen'), MenuOption('No', color = 'ured')]
     choice = menu(text, options, default = default)
     return choice == 'Yes'
 
-def startingMenu():
+def startingMenu() -> int:
     '''
     Creates the starting menu.\n
     Returns:\n
@@ -418,7 +421,7 @@ def startingMenu():
         options[0].description = 'Create a new hero and start a new game with him.'
     return menu('Welcome to Career! What do you want to do?', options, help = '(use arrow keys, then press Enter)')
 
-def rankingsMenu():
+def rankingsMenu() -> int:
     '''
     Creates the rankings menu.\n
     Returns:\n
@@ -464,18 +467,18 @@ def viewClubRankings() -> None:
         tableRows.append([i, club.rating, club.nation.shortName, club.colorText('   ', bg = True) + club.color2Text('   ', bg = True), club.shortName, club.name, club.fullName, club.nickname])
     Table(tableRows, tableHeaders, '<uyellow>Worldwide football club rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').print(True)
 
-def OPTAtoRating(optaPowerRanking):
+def OPTAtoRating(optaPowerRanking) -> float:
     '''
     Converts an OPTA Power Ranking to the in-game rating using this formula:\n
-    inGameRating = {optaPowerRanking} * 3 / 5 + 27
+    `inGameRating` = `optaPowerRanking` * 3 / 5 + 27
     '''
     return round(float(optaPowerRanking) * 3 / 5 + 27, 1)
 
-def floor(num) -> int:
-    '''Rounds the given number to the lowest integer of the two nearest ones.'''
+def floor(num: float) -> int:
+    '''Rounds `num` down.'''
     return int(num // 1)
 
-def removeExtension(file, extension = FILE_EXTENSION) -> str:
+def removeExtension(file: str, extension: str = FILE_EXTENSION) -> str:
     '''Removes the given extension from the given file path.'''
     return file.replace(extension, '')
 
@@ -522,7 +525,7 @@ def importPackages():
     yield
 
 def progressBarSetting() -> bool:
-    '''Same as settings.viewProgress but works before settings were created.'''
+    '''Same as `settings.viewProgress` but works before `settings` was created.'''
     try:
         with open(files['settings'], encoding = 'utf-8') as f:
             return f.readlines()[3].find('Yes') != -1
@@ -532,14 +535,14 @@ def progressBarSetting() -> bool:
 ### Classes
 
 class Find:
-    '''Placeholder for the find() function.'''
+    '''Placeholder for `find()`.'''
     @classmethod
     def find(cls, name, allowExceptions: bool = False):
         '''
-        Returns a {cls} object that corresponds to {name} or -1 if object was not found.
-        Raises an Exception if {allowExceptions} is True.\n
-        Each {cls} instance must have a _searchOptions attribute containing strings that the instance can be found by.
-        All strings in _searchOptions must be uncolored and lowercase.
+        Returns a `cls` object that corresponds to `name` or -1 if object was not found.
+        Raises an Exception if `allowExceptions` is True.\n
+        Each `cls` instance must have a `_searchOptions` attribute containing strings that the instance can be found by.
+        All strings in `_searchOptions` must be uncolored and lowercase.
         '''
         name = str(name).lower()
         for obj in cls.instances:
@@ -550,9 +553,9 @@ class Find:
         return -1
 
 class ColorText:
-    '''Placeholder for the colorText() function.'''
-    def colorText(self, text, color = 'default') -> str:
-        '''Colors the given text with the given color in prompt_toolkit's HTML format.'''
+    '''Placeholder for `colorText()`.'''
+    def colorText(self, text: str, color: str = 'default') -> str:
+        '''Colors `text` with `color` in prompt_toolkit's HTML format.'''
         if not color:
             return text
         if color == 'default':
@@ -561,12 +564,12 @@ class ColorText:
 
 class Settings:
     '''
-    Loads data in YAML from {files['settings']} and creates Setting objects from it.
+    Loads data in YAML from `files['settings']` and creates Setting objects from it.
     The settings are accessible from this object.\n
-    A list of all settings:
-        .viewProgress;
-        .excTraceback;
-        .allowRussia.
+    Settings:
+        `.viewProgress`;
+        `.excTraceback`;
+        `.allowRussia`.
     '''
     def __init__(self):
         self._contents = loadData(files['settings'])
@@ -582,8 +585,8 @@ class Settings:
     def settings(self):
         return Setting.instances
     
-    def save(self):
-        '''Saves itself to files['settings'].'''
+    def save(self) -> None:
+        '''Saves itself to `files['settings']`.'''
         data = []
         for setting in self.settings:
             data.append({
@@ -597,10 +600,10 @@ class Settings:
             input('<ured>An error occured while trying to save the settings.\nPress Enter to continue: </ured>')
 
     def newSetting(self):
-        '''Removes the first setting from self._contents, creates a new Setting object and returns it.'''
+        '''Removes the first setting from `self._contents`, creates a new Setting object and returns it.'''
         return Setting(self._contents.pop(0))
 
-    def edit(self):
+    def edit(self) -> None:
         '''Creates a pretty menu that allows the user to edit the settings.'''
         while True:
             print(self)
@@ -617,16 +620,17 @@ class Setting:
     '''
     The class for a setting.\n
     Attributes:
-        .name: The name of the setting.
-        .description: The description of the setting.
-        .setTo: The value that the setting is set to.
-        .values: A list of values that the setting can be set to.
+        `.name`: The name of the setting.
+        `.description`: The description of the setting.
+        `.setTo`: The value that the setting is set to.
+        `.values`: A list of values that the setting can be set to.
+        `.instances`: A list of all Setting instances.
     '''
     instances = []
     def __init__(self, data):
         '''
         Arguments:
-            data: A dictionary that contains the setting's name, description, setTo and values.
+            `data`: A dictionary that contains the setting's name, description, setTo and values.
         '''
         self.__class__.instances.append(self)
         self.name = data['name']
@@ -640,7 +644,7 @@ class Setting:
         '''Get the string representation of the setting that is suitable for showing to the user.'''
         return f'{self.name}: {colorSettingValue(self.setTo)}.\n<ugrey>{self.description}</ugrey>\n\n'
 
-    def edit(self):
+    def edit(self) -> None:
         '''Creates a pretty menu that allows the user to edit a setting.'''
         self.setTo = menu('What do you want to change this setting to?', [MenuOption(*colorSettingValue(value, mode = 'color'), self.description, value) for value in self.values])
         clear()
@@ -655,20 +659,20 @@ class Setting:
 
 class MenuOption:
     '''
-    The class for a menu option.
+    The class for a menu option.\n
     Attributes:
-        .text: The text of the option.
-        .color: The color of the text of the option.
-        .description: The description of the option (shown at the bottom while choosing).
-        .returnValue: Whatever the menu() function will return if the user chooses this option. .text by default.
+        `.text`: The text of the option.
+        `.color`: The color of the text of the option.
+        `.description`: The description of the option (shown at the bottom while choosing).
+        `.returnValue`: Whatever `menu()` will return if the user chooses this option. .text by default.
     '''
     def __init__(self, text, color: str | None = None, description: str | None = None, value = None):
         '''
         Arguments:
-            text: The text of the option.
-            color: The color of the option. The option will have the default color if this is set to None.
-            description: The description of the option. The option will not have a description if this is set to None.
-            value: Whatever the menu() function will return if the user chooses this option. {text} by default.
+            `text`: The text of the option.
+            `color`: The color of the option. The option will have the default color if this is set to None.
+            `description: The description of the option. The option will not have a description if this is set to None.
+            `value`: Whatever `menu()` will return if the user chooses this option. `text` by default.
         '''
         if not value:
             value = text
@@ -681,16 +685,16 @@ class MenuOption:
 
 class Table:
     '''
-    The class for a table.
-    Supports prompt_toolkit's HTML formatted text.
+    The class for a table.\n
+    Supports prompt_toolkit's HTML formatted text.\n
     Attributes:
-        .style: The table's style. To view an example of a style print Table.defaultStyle.
-        .title: The table's title.
-        .caption: The table's caption. Printed after the table.
-        .noHeaders: True if the table has no headers, False otherwise.
-        .headers: A list of Header objects. If the table has no headers, this will be full of automatically generated empty Header objects. Use .noHeaders to check for that if you need to.
-        .data: A list of Row objects.
-        .columns: Like .data, but instead of containing data grouped by rows in contains data grouped by columns.It is still a list of Row objects though.
+        `.style`: The table's style. To view an example of a style print `Table.defaultStyle`.
+        `.title`: The table's title.
+        `.caption`: The table's caption. Printed after the table.
+        `.noHeaders`: True if the table has no headers, False otherwise.
+        `.headers`: A list of Header objects. If the table has no headers, this will be full of automatically generated empty Header objects. Use `.noHeaders` to check for that if you need to.
+        `.data`: A list of Row objects.
+        `.columns`: Like `.data`, but instead of containing data grouped by rows in contains data grouped by columns. It is still a list of Row objects though.
     '''
     defaultStyle = {
     'leftTop': '┏',
@@ -717,11 +721,11 @@ class Table:
     def __init__(self, data: list, headers: list | None = None, title: str | None = None, caption: str | None = None, style: dict = None):
         '''
         Arguments:
-            data: The table's rows. Can be a list of Row objects or a list of lists of cell values. Doesn't include headers.
-            headers: The table's headers. Can be a list of Header objects or a list of strings. If set to None, the table will have no headers.
-            title: The table's title. 
-            caption: Printed below the table.
-            style: Table.defaultStyle if set to None.
+            `data`: The table's rows. Can be a list of Row objects or a list of lists of cell values. Does not include headers.
+            `headers`: The table's headers. Can be a list of Header objects or a list of strings. If set to None, the table will have no headers.
+            `title`: The table's title. 
+            `caption`: Printed below the table.
+            `style`: `Table.defaultStyle` if set to None.
         '''        
         if style:
             self.style = style
@@ -814,7 +818,7 @@ class Table:
     def print(self, inputToo: bool = False) -> None | str:
         '''
         Prints the table.
-        Returns the user input if inputToo is True.
+        Returns the user input if `inputToo` is True.
         '''
         for line in self.getPrintable().splitlines(inputToo):
             print(line, end = '' if inputToo else '\n')
@@ -823,21 +827,21 @@ class Table:
 
 class Header:
     '''
-    The class for a table header.
+    The class for a table header.\n
     Attributes:
-        .text: The header's text.
-        .ucText: The header's uncolored text.
-        .selfAlign: The header's alignment. Can be 'left', 'right' or 'center'.
-        .columnAlign: The alignment of every cell in the header's column. Can be 'left', 'right' or 'center'.
-        .columnColor: The color of every cell in the header's column.
+        `.text`: The header's text.
+        `.ucText`: The header's uncolored text.
+        `.selfAlign`: The header's alignment. Can be 'left', 'right' or 'center'.
+        `.columnAlign`: The alignment of every cell in the header's column. Can be 'left', 'right' or 'center'.
+        `.columnColor`: The color of every cell in the header's column.
     '''
     def __init__(self, text, selfAlign: str = 'center', columnAlign: str = 'left', columnColor: None | str = None):
         '''
         Arguments:
-            text: The header's text.
-            selfAlign: The header's alignment. Can be 'left', 'right' or 'center'.
-            columnAlign: The alignment of every cell in the header's column. Can be 'left', 'right' or 'center'.
-            columnColor: The color of every cell in the header's column.
+            `text`: The header's text.
+            `selfAlign`: The header's alignment. Can be 'left', 'right' or 'center'.
+            `columnAlign`: The alignment of every cell in the header's column. Can be 'left', 'right' or 'center'.
+            `columnColor`: The color of every cell in the header's column.
         '''
         self.text = str(text)
         self.ucText = uncolorText(text)
@@ -847,42 +851,43 @@ class Header:
 
 class Row:
     '''
-    The class for a table row.
+    The class for a table row.\n
     Attributes:
-        .cells: A list of cell values.
-        .ucCells: Same as .cells, but contains uncolored text only.
+        `.cells`: A list of cell values.
+        `.ucCells`: Same as .cells, but contains uncolored text only.
     '''
     def __init__(self, *cells):
         '''
         Arguments:
-            *cells: A list of cell values.
+            `*cells`: Cell values.
         '''
         self.cells = [str(cell) for cell in cells]
         self.ucCells = [uncolorText(cell) for cell in self.cells]
 
 class Nation(ColorText, Find):
     '''
-    The class for a nation/country.
+    The class for a nation/country.\n
     Attributes:
-        .fifaRanking: The FIFA ranking of the nation.
-        .leagues: A list of League objects that belong to the nation.
-        .clubs: A list of Club objects that belong to the nation.
-        .color: The main color of the nation.
-        .names: All names of the nation.
-        .name: The main name of the nation. Same as .names[0].
-        .shortName: A unique 3 letter code that can be used to identify the nation.
-        .nationality: The nationality of people from the nation. Example: Finnish.
-        .uc{attribute}: Same as .{attribute} but uncolored.
+        `.fifaRanking`: The FIFA ranking of the nation.
+        `.leagues`: A list of League objects that belong to the nation.
+        `.clubs`: A list of Club objects that belong to the nation.
+        `.color`: The main color of the nation.
+        `.names`: A list of all names of the nation.
+        `.name`: The main name of the nation. Same as `.names[0]`.
+        `.shortName`: A unique 3 letter code that can be used to identify the nation.
+        `.nationality: The nationality of people from the nation. Example: Finnish.
+        `.uc{attribute}`: Same as `.{attribute}` but uncolored.
+        `.instances`: A list of all Nation instances.
     '''
     instances = []
     def __init__(self, names: list[str], shortName: str, nationality: str, color: str, fifaRanking: int):
         '''
         Arguments:
-            names: All names of the nation.
-            shortName: A unique 3 letter code that can be used to identify the nation.
-            nationality: The nationality of people from the nation. Example: Finnish.
-            color: The main color of the nation.
-            fifaRanking: The FIFA ranking of the nation.
+            `names`: All names of the nation.
+            `shortName`: A unique 3 letter code that can be used to identify the nation.
+            `nationality`: The nationality of people from the nation. Example: Finnish.
+            `color`: The main color of the nation.
+            `fifaRanking`: The FIFA ranking of the nation.
         '''
         self.__class__.instances.append(self)
         self.color = color
@@ -903,21 +908,22 @@ class Nation(ColorText, Find):
 class Trait(ColorText, Find):
     '''
     Attributes:
-        .color: The color of the trait.
-        .num: The number of the trait. Starts at 1.
-        .name: The name of the trait.
-        .description: The description of the trait.
-        .category: The category of the trait.
-        .uc{attribute}: Same as .{attribute} but uncolored.
+        `.color`: The color of the trait.
+        `.num`: The number of the trait. Starts at 1.
+        `.name`: The name of the trait.
+        `.description`: The description of the trait.
+        `.category`: The category of the trait.
+        `.uc{attribute}`: Same as `.{attribute}` but uncolored.
+        `.instances`: A list of all Trait instances.
     '''
     instances = []
     def __init__(self, name: str, description: str, color: str, category: str):
         '''
         Arguments:
-            name: The name of the trait.
-            description: The description of the trait.
-            color: The color of the trait.
-            category: The category of the trait.
+            `name`: The name of the trait.
+            `description`: The description of the trait.
+            `color`: The color of the trait.
+            `category`: The category of the trait.
         '''
         self.__class__.instances.append(self)
         self.color = color
@@ -931,35 +937,36 @@ class Trait(ColorText, Find):
         self.ucCategory = category
         self._searchOptions = [str(self.ucNum), self.ucName.lower()]
 
-    @staticmethod
-    def printInstances():
+    @classmethod
+    def printInstances(cls) -> None:
         '''Prints all of the traits.'''
         longestName = 0
-        for instance in Trait.instances:
+        for instance in cls.instances:
             longestName = max(longestName, len(instance.ucName))
-        for instance in Trait.instances:
+        for instance in cls.instances:
             print(f'{instance.num}{instance.colorText(".")}{"" if instance.ucNum >= 10 or len(Trait.instances) < 10 else " "} {instance.name}{" " * (longestName - len(instance.ucName))} {instance.colorText("-")} {instance.description}')
 
 class Position(ColorText):
     '''
-    The class for a position.
+    The class for a position.\n
     Attributes:
-        .weightings: The weightings used to calculate the overall of a player.
-        .modifier: The modifier used to calculate the overall of a player.
-        .color: The color of the position.
-        .name: The full name of the position.
-        .shortName: The short name of the position.
-        .uc{attribute}: Same as .{attribute} but uncolored.
+        `.weightings`: The weightings used to calculate the overall of a player.
+        `.modifier`: The modifier used to calculate the overall of a player.
+        `.color`: The color of the position.
+        `.name`: The full name of the position.
+        `.shortName`: The short name of the position.
+        `.uc{attribute}`: Same as `.{attribute}` but uncolored.
+        `.instances`: A list of all Position instances.
     '''
     instances = []
     def __init__(self, shortName: str, name: str, color: str, weightings: list[float], modifier: float):        
         '''
         Arguments:
-            shortName: The short name of the position.
-            name: The full name of the position.
-            color: The color of the position.
-            weightings: The weightings used to calculate the overall of a player.
-            modifier: The modifier used to calculate the overall of a player.
+            `shortName`: The short name of the position.
+            `name`: The full name of the position.
+            `color`: The color of the position.
+            `weightings`: The weightings used to calculate the overall of a player.
+            `modifier`: The modifier used to calculate the overall of a player.
         '''
         self.__class__.instances.append(self)
         self.weightings = weightings
@@ -1037,19 +1044,19 @@ class Player:
     def attributes(self):
         return [self.pac, self.sho, self.pas, self.dri, self.dfn, self.phy]
     
-    def getPositionScore(self, position):
+    def getPositionScore(self, position) -> float | int:
         '''Returns the overall of the player in the given position.'''
         score = self.pac * position.weightings[0] + self.sho * position.weightings[1] + self.pas * position.weightings[2] + self.dri * position.weightings[3] + self.dfn * position.weightings[4] + self.phy * position.weightings[5] + (99 if self.foot == 'left' or self.hasTrait('Weak Foot') else 1) * position.weightings[6] + (99 if self.foot == 'right' or self.hasTrait('Weak Foot') else 1) * position.weightings[7] + position.modifier
         return score
 
-    def hasTrait(self, targetTrait):
+    def hasTrait(self, targetTrait) -> bool:
         '''
-        Returns True if the player has the trait targetTrait, False otherwise.
-        targetTrait must be the Trait object itself or it must be in ._searchOptions.
+        Returns True if `targetTrait` is one of the traits of the player, False otherwise.
+        `targetTrait` must be a Trait object or be in ._searchOptions.
         '''
         return targetTrait in self.traits or Trait.find(targetTrait) in self.traits
 
-    def viewProfile(self):
+    def viewProfile(self) -> None:
         '''Shows the profile of the player.'''
         # input('\n' + '\n'.join([str(i) + '. ' + pos.shortName + ' ' + str(self.getPositionScore(pos)) for i, pos in enumerate(self.positions, 1)]) + '\n')
         clear()
@@ -1065,26 +1072,31 @@ class Player:
             print(f'{trait.name}{" " * (max([len(trait.ucName) for trait in self.traits]) - len(trait.ucName))} {trait.colorText("-")} {trait.description}')
         input('\n<uyellow>Press Enter to continue.</uyellow> ')
     
-    def colorText(self, text):
-        '''Colors the text in the color of the nation of the hero and underlines it.'''
+    def colorText(self, text: str) -> str:
+        '''Colors `text` in the color of the nation of the hero and underlines it.'''
         if isinstance(self, Hero):
             return '<underline>' + self.nation.colorText(text) + '</underline>'
         return self.nation.colorText(text)
 
-    def getDifferenceFromMax(self, attribute):
-        '''Returns the difference between the attribute and the maximum attribute that is not the attribute itself.'''
+    def getDifferenceFromMax(self, attribute: int) -> int:
+        '''Returns the difference between `attribute` and the biggest attribute that is not `attribute` itself.'''
         attributes = self.attributes
         attributes.remove(attribute)
         return attribute - max(attributes)
 
 class Hero (Player):
     '''
-    The class for a hero.
+    The class for a hero.\n
     Shares all attributes with the Player class.
     '''
-    def __init__(self, mode, data = None):
+    def __init__(self, mode: str, data: dict | None = None):
         # insert the docstring here!
-        def getAttribute(attribute, pointsSpent = 0, attributesLeft = 0):
+        def getAttribute(attribute: str, pointsSpent: int = 0, attributesLeft: int = 0) -> int:
+            '''
+            Makes the user select a value for the given attribute.\n
+            They will be prompted with the given message.\n
+            Returns the selected value.
+            '''
             upperBound = min(MAX_POINTS, ALL_POINTS - pointsSpent - attributesLeft * MIN_POINTS)
             lowerBound = max(MIN_POINTS, ALL_POINTS - pointsSpent - attributesLeft * MAX_POINTS)
             while True:
@@ -1099,7 +1111,12 @@ class Hero (Player):
                 except:
                     print(f'<ured>You need to input a number between {lowerBound} and {upperBound}.\nAll points have to be used.</ured>\n')
 
-        def getTrait(message):
+        def getTrait(message: str):
+            '''
+            Makes the user select a trait.\n
+            They will be prompted with the given message.\n
+            Returns the selected trait.
+            '''
             while True:
                 traitNum = input(message)
                 if traitNum == '/quit':
@@ -1156,7 +1173,7 @@ class Hero (Player):
                         self.nation = Nation.find(nationSuggestion)
                         if self.nation != -1:
                             break
-                        print('<ured>Nation not found.</ured>\n\n')
+                        print('\n<ured>Sorry, we could not find your nation. Please make sure that they are a member of FIFA.</ured>\n\n')
                     print(f'\n\n<uyellow>Let\'s check.</uyellow>\nThe hero\'s full name is {self.fullName}.\nHis shirt name is {self.shirtName}.\nHis nation is {self.nation.name}.')
                     if yesNoMenu('Is everything here correct?'):
                         break
@@ -1207,7 +1224,8 @@ class Hero (Player):
         self.fullName, self.ucFullName = [self.colorText(self.fullName), self.fullName]
         self.shirtName, self.ucShirtName = [self.colorText(self.shirtName), self.shirtName]
 
-    def toDict(self):
+    def toDict(self) -> dict:
+        '''Returns itself as a dictionary that is ready to be used for saving.'''
         data = {a: b for a, b in self.__dict__.items()}
         data['nation'] = data['nation'].ucName
         data['traits'] = [trait.ucNum for trait in data['traits']]
@@ -1219,8 +1237,30 @@ class Hero (Player):
         return data
 
 class Club(Find):
+    '''
+    The class for a club.\n
+    Attributes:
+        `.rating`: The in-game overall rating of the club.
+        `.colors`: A list of the main colors of the club.
+        `.names`: A list of all generic names of the club.
+        `.name`: The main generic name of the club.
+        `.fullName`: The official name of the club.
+        `.nickname`: The nickname of the club.
+        `.shortName`: A unique 3 letter code that can be used to identify the club.
+        `.uc{attribute}`: Same as `.{attribute}` but uncolored.
+        `.instances`: A list of all Club instances.
+    '''
     instances = []
-    def __init__(self, ovr, fullName, names, nickname, shortName, colors):
+    def __init__(self, ovr: float | int, fullName: str, names: list[str], nickname: str, shortName: str, colors: list[str]):
+        '''
+        Arguments:
+            `ovr`: The in-game overall rating of the club.
+            `fullName`: The official name of the club.
+            `names`: A list of all generic names of the club.
+            `nickname`: The nickname of the club.
+            `shortName`: A unique 3 letter code that can be used to identify the club.
+            `colors`: A list of the main colors of the club.
+        '''
         self.__class__.instances.append(self)
         self.rating = ovr
         self.colors = colors
@@ -1236,18 +1276,45 @@ class Club(Find):
         self.ucShortName = shortName
         self._searchOptions = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
     
-    def colorText(self, text, bg = False):
+    def colorText(self, text, bg = False) -> str:
+        '''
+        Colors the `text` with the first color of the club.\n
+        Colors the background instead of the text if `bg` is True.
+        '''
         return f'<{"bg" if bg else ""}{self.colors[0]}>{text}</{"bg" if bg else ""}{self.colors[0]}>'
     
-    def color2Text(self, text, bg = False):
+    def color2Text(self, text, bg = False) -> str:
+        '''
+        Colors the `text` with the second color of the club.
+        Colors the background instead of the text if `bg` is True.
+        '''
         return f'<{"bg" if bg else ""}{self.colors[1]}>{text}</{"bg" if bg else ""}{self.colors[1]}>'
     
-    def colorFullText(self, text):
-        return f'<{self.colors[0]}><bg{self.colors[1]}>{text}</bg{self.colors[1]}></{self.colors[0]}>'
+    def colorFullText(self, text) -> str:
+        '''
+        Colors the `text` with the first color of the club and colors the background with the second color of the club.
+        '''
+        return self.color2Text(self.colorText(text), True)
     
 class League(Find):
+    '''
+    The class for a league.
+    Attributes:
+        `.nation`: The nation the league corresponds to.
+        `.level`: The level of the league in the league pyramid of the nation of the league. Example: 2 for the English Champtionship.
+        `.shortName`: A unique 4 symbol code that can be used to identify the league.
+        `.name`: The name of the league.
+        `.clubs`: A list of all clubs that participate in the league.
+        `.capacity`: How many clubs participate in the league.
+    '''
     instances = []
-    def __init__(self, name, nation, clubs):
+    def __init__(self, name: str, nation, clubs: list):
+        '''
+        Arguments:
+            `name`: The name of the league.
+            `nation`: The nation the league corresponds to.
+            `clubs`: A list of all clubs that participate in the league.
+        '''
         self.__class__.instances.append(self)
         self.nation = nation
         self.nation.leagues.append(self)
@@ -1264,21 +1331,29 @@ class League(Find):
         self.capacity = len(self.clubs)
         self._searchOptions = [self.ucName.lower(), self.ucShortName] + [f'{nationName.lower()} {self.level}' for nationName in self.nation.ucNames]
     
-    def colorText(self, text):
+    def colorText(self, text: str) -> str:
+        '''Colors the `text` with the main color of the nation.'''
         return self.nation.colorText(text)
     
     @property
     def rating(self):
         return self.getRating()
     
-    def getRating(self, mode = 'average'):
+    def getRating(self, mode = 'average') -> float:
+        '''
+        Returns the rating of the league calculated using the given `mode`.\n
+        `mode`:
+            'average': Calculates the average of all ratings of the clubs in the league.
+            'top': Calculates the average of the ratings of the clubs in the top half of the league.
+            'median': Calculates the median rating of all the clubs in the league.
+        '''
         match mode:
             case 'average':
                 return round(sum([club.rating for club in self.clubs]) / self.capacity, 2)
             case 'top':
-                return round(sum([club.rating for club in self.clubs[:8]]) / 8, 2)
+                return round(sum([club.rating for club in self.clubs[:self.capacity // 2]]) / (self.capacity // 2), 2)
             case 'median':
-                return self.sortedClubs[self.capacity // 2]
+                return round((self.sortedClubs[self.capacity // 2] + self.sortedClubs[(self.capacity - 1) // 2]) / 2, 2)
     
     @property
     def sortedClubs(self):
@@ -1320,12 +1395,15 @@ fixWin()
 chdir(path.dirname(path.abspath(__file__)))
 settings, mainStyleDict = parseDatabase(list(files.values()) + list(dirs.values()), [createNations, createLeagues, createPositions, createTraits, Settings, createStyle], [files['settings'], files['style']])
 mainStyle = Style.from_dict(mainStyleDict)
-nationNames = [option for nation in Nation.instances for option in nation._searchOptions]
+
+nationNames = [str(nation.fifaRanking) for nation in Nation.instances]
+for nation in Nation.instances:
+    nationNames += nation.ucNames
+nationNames += [nation.ucShortName for nation in Nation.instances]
 
 ### Testing
 
-inspect(Nation.instances[0], sort = False)
-input()
+
 
 ### Game loop
 
