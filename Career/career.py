@@ -1496,4 +1496,5 @@ while True:
     hero.viewProfile()
 
     clear()
+
     input('<dred>There will be a career here soon... For now, though, press Enter:</dred> ')
