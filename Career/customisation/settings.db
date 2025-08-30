@@ -1,7 +1,7 @@
 - name: View preliminary progress bars
   description: Shows progress bars when launching the application if set to Yes. Does
     not affect other progress bars.
-  setTo: 'No'
+  setTo: 'Yes'
   values:
   - 'Yes'
   - 'No'

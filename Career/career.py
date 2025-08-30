@@ -1,11 +1,28 @@
 ### TODO
-### finish documentation and type hints
-### test that everything works normally
-### test table style missing keys
+### ----
 
-### Special imports
+### Imports
 
 from rich.progress import Progress
+# from rich.layout import Layout
+from rich import inspect
+
+from prompt_toolkit import print_formatted_text, prompt
+from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.styles import Style
+
+from os import name as osName, system, listdir, path, chdir
+from os.path import getmtime, exists
+
+from colorama import just_fix_windows_console as fixWin
+from questionary import select as questionary, Choice
+from random import random, shuffle, choice, choices
+from traceback import format_exc
+from yaml import safe_load, safe_dump
+from sys import exit as sysExit
+from datetime import datetime
+from hashlib import sha3_224
 from time import sleep
 
 ### File variables
@@ -14,15 +31,16 @@ dirs = {
     'db': 'database/',
     'saves': 'saves/',
     'setups': 'setups/',
-    'custom': 'customisation/'
+    'custom': 'customisation/',
 }
 files = {
+    'settings': dirs['custom'] + 'settings.db',
+    'style': dirs['custom'] + 'style.db',
     'nations': dirs['db'] + 'nations.db',
+    'names': dirs['db'] + 'names.db',
     'leagues': dirs['db'] + 'leagues.db',
     'positions': dirs['db'] + 'positions.db',
     'traits': dirs['db'] + 'traits.db',
-    'settings': dirs['custom'] + 'settings.db',
-    'style': dirs['custom'] + 'style.db'
 }
 comments = {file: '' for file in files.keys()}
 dbFiles = {a: b for a, b in files.items() if dirs['db'] in b}
@@ -37,11 +55,13 @@ DOUBLE_BACKSLASH_N = '\\n'
 BACKSLASH_N = '\n'
 SLASH = '/'
 SINGLE_QUOTE = "'"
+LESS = '&lt;'
+MORE = '&gt;'
 ALL_POINTS = 300
 MAX_POINTS = 80
 MIN_POINTS = 20
 
-DEV_MODE = False
+DEV_MODE = True
 
 ### Text functions
 
@@ -53,7 +73,10 @@ def input(*message, sep: str = ' ', default: str = "", completer = None) -> str:
     Returns the string that the user inputs.
     '''
     message = sep.join([str(part) for part in message])
-    return prompt(HTML(message), style = mainStyle, default = default, completer = completer)
+    try:
+        return prompt(HTML(message), style = mainStyle, default = default, completer = completer)
+    except:
+        return origInput(message)
 
 def print(*values, sep: str = ' ', end: str = '\n') -> None:
     '''
@@ -62,7 +85,10 @@ def print(*values, sep: str = ' ', end: str = '\n') -> None:
     Be careful when printing anything that contains < and > as these may cause an error in prompt_toolkit.
     '''
     values = sep.join([str(part) for part in values])
-    print_formatted_text(HTML(values), end = end, style = mainStyle)
+    try:
+        print_formatted_text(HTML(values), end = end, style = mainStyle)
+    except:
+        origPrint(values)
 
 def richFormat(text: str) -> str:
     '''Formats prompt_toolkit's HTML formatted text to match Rich formatting.'''
@@ -96,7 +122,7 @@ def alignText(text: str, ucText: str, align: str, width: int, fill = ' ') -> str
         case 'right':
             text = text.rjust(newWidth, fill)
         case _:
-            raise Exception(f'alignText(): align must be "left", "center" or "right", not {align}.')
+            raise ValueError(f'alignText(): align must be "left", "center" or "right", not {align}.')
     return text
 
 def colorSettingValue(value: str, mode: str = 'html') -> str | list | None:
@@ -117,7 +143,7 @@ def colorSettingValue(value: str, mode: str = 'html') -> str | list | None:
             if value.lower() == 'no':
                 return [value, 'red']
         case _:
-            raise Exception(f'colorSettingValue(): mode must be "html" or "color", not {mode}.')
+            raise ValueError(f'colorSettingValue(): mode must be "html" or "color", not {mode}.')
     return None
 
 def clear() -> None:
@@ -141,7 +167,7 @@ def saveData(filePath: str, data, allowExceptions: bool = False) -> bool:
         return True
     except Exception as e:
         if allowExceptions:
-            raise Exception(f'Failed to save data to {filePath}:\n{e}\n')
+            raise ValueError(f'Failed to save data to {filePath}:\n{e}\n')
         return False
     
 def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool = False) -> bool:
@@ -163,7 +189,7 @@ def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool =
             return safe_load(contents)
     except Exception as e:
         if allowExceptions:
-            raise Exception(f'Failed to load data from {filePath}:\n{e}\n')
+            raise ValueError(f'Failed to load data from {filePath}:\n{e}\n')
         return False
 
 def dataToYAML(data) -> bytes:
@@ -222,7 +248,7 @@ def parseDatabase(pathsToCheck: list[str], funcsToCheck: list, outputsToReturn: 
                             raise Exception
                     except:
                         exc = e
-                    errorList.append(f'{"DatabaseError" if type(e).__name__ == "Exception" else type(e).__name__} in {file}: {exc}')
+                    errorList.append(f'{type(e).__name__} in {file}: {exc}')
             if progressBars:
                 bar.update(task, advance = 2)
         return toReturn
@@ -236,7 +262,7 @@ def parseDatabase(pathsToCheck: list[str], funcsToCheck: list, outputsToReturn: 
     sleep(1)
     if errorList:
         clear()
-        origPrint(f'The database is incomplete.\nIf you moved or edited any files from the game directory, please revert the changes or reinstall the game in case you cannot.\n\nThe following error{"s" if len(errorList) > 1 else ""} occured:')
+        origPrint(f'The database is corrupted.\nIf you moved or edited any files from the game directory, please revert the changes or reinstall the game in case you cannot.\n\nThe following error{"s" if len(errorList) > 1 else ""} occured:')
         for i, error in enumerate(errorList, 1):
             origPrint(f'{i}. {error}')
         raiseFatalError()
@@ -252,12 +278,12 @@ def createLeagues() -> None:
             if str(clubData['rating'])[-1] == '!':
                 clubData['rating'] = OPTAtoRating(clubData['rating'][:-1])
             if not 27 <= clubData['rating'] <= 87:
-                raise Exception(f'Rating of clubs must be between 27 and 87 (0 and 100 in OPTA power rankings), while {clubData["names"][0]}\'s is {clubData["rating"]}.')
+                raise DatabaseError(f'Rating of clubs must be between 27 and 87 (0 and 100 in OPTA power rankings), while {clubData["names"][0]}\'s is {clubData["rating"]}.')
             for name in clubData['names'] + [clubData['nickname']]:
                 if not 1 <= len(name) <= 25:
-                    raise Exception(f'Length of generic names and nicknames must be between 1 and 25, while {name}\'s is {len(name)}.')
+                    raise DatabaseError(f'Length of generic names and nicknames must be between 1 and 25, while {name}\'s is {len(name)}.')
             if len(clubData['shortName']) != 3:
-                raise Exception(f'Length of club short names must be 3, while {clubData["shortName"]}\'s is {len(clubData["shortName"])}.')
+                raise DatabaseError(f'Length of club short names must be 3, while {clubData["shortName"]}\'s is {len(clubData["shortName"])}.')
             leagueClubs.append(Club(clubData['rating'], clubData['fullName'], clubData['names'], clubData['nickname'], clubData['shortName'], clubData['colors']))
         League(leagueData['name'], leagueData['nation'], leagueClubs)
     clubShortNames = [club.ucShortName for club in Club.instances]
@@ -269,10 +295,9 @@ def createLeagues() -> None:
             duplicateShortNames.add(x)
         else:
             seenShortNames.add(x)
-
     if duplicateShortNames:
-        raise Exception(f'There {"are" if len(duplicateShortNames) > 1 else "is a"} duplicate club short name{"s" if len(duplicateShortNames) > 1 else ""}: {", ".join(duplicateShortNames)}.')
-    
+        raise DatabaseError(f'There {"are" if len(duplicateShortNames) > 1 else "is a"} duplicate club short name{"s" if len(duplicateShortNames) > 1 else ""}: {", ".join(duplicateShortNames)}.')
+
 def createPositions() -> None:
     '''Creates all Position objects from `files['positions']`.'''
     positions = loadData(files['positions'])
@@ -280,10 +305,15 @@ def createPositions() -> None:
         Position(position['shortName'], position['name'], position['color'], list(position['weightings'].values()), position['modifier'])
 
 def createNations() -> None:
-    '''Creates all Nation objects from `files['nations']`.'''
+    '''Creates all Nation objects from `files['nations']` and `files['names']`.'''
     nations = loadData(files['nations'])
-    for i, nation in enumerate(nations, 1):
-        Nation(nation['names'], nation['shortName'], nation['nationality'], nation['color'], i)
+    names = loadData(files['names'])
+    for i, data in enumerate(zip(nations, names), 1):
+        nation, names = data
+        for name in names['firstNames'] + names['lastNames']:
+            if not 2 <= len(name) <= 25:
+                raise Exception(f'Length of people names must be between 2 and 25, while {name}\'s is {len(name)}.')
+        Nation(nation['names'], nation['shortName'], nation['nationality'], nation['color'], i, names['firstNames'], names['lastNames'])
 
 def createTraits() -> None:
     '''Creates all Trait objects from `files['traits']`.'''
@@ -324,7 +354,9 @@ def saveSetup(hero) -> None:
             heroPrep['hash'] = dataToHash(heroPrep)
             saveData(dirs['setups'] + filePath, heroPrep)
         except Exception as e:
-            input(f'<ured>An error accured while trying to save your setup:\n{e}\nPlease try a different file name.\nPress Enter to continue.</red>\n\n ')
+            print('<ured>An error occured while trying to save your setup:</ured>', end=' ')
+            origPrint(e)
+            input('\n<ured>Please try a different file name.\nPress Enter to continue.</ured> ')
             continue
         print('\n<dgreen>Your setup was successfully saved!</dgreen>')
         sleep(1)
@@ -346,21 +378,23 @@ def loadSetup():
                 hashFlag = decodedHash != dataToHash(decodedHeroPrep)
                 timeFlag = not isValidChangeDate(filePath, decodedHeroPrep['time'])
                 if hashFlag and timeFlag:
-                    raise Exception('B001')
+                    raise ValueError('B001')
                 if hashFlag:
-                    raise Exception('H001')
+                    raise ValueError('H001')
                 if timeFlag:
-                    raise Exception('T001')
-            except Exception as e:
+                    raise ValueError('T001')
+            except ValueError as e:
                 print(f'<ured>This setup was modified. Flag reason: {e}.</ured>\n\n')
                 continue
             heroData = decodedHeroPrep['hero']
-            hero = Hero('fromDict', heroData)
+            hero = Hero(heroData)
             print('<dgreen>Your setup was successfully loaded!</dgreen>')
             sleep(1)
             break
         except Exception as e:
-            print(f'<ured>This setup is corrupted.\n{e}</ured>\n\n')
+            print(f'<ured>This setup is corrupted. The following error occured:</ured>', end=' ')
+            origInput(f'{e}')
+            input(f'<uyellow>Press Enter to continue:</uyellow> ')
     return hero
 
 ### Shortcut functions
@@ -371,7 +405,12 @@ def menu(title: str, options: list, help: str = ' ', default = None):
     `options` must be instances of the MenuOption class.
     '''
     menuOptions = [Choice(option if isinstance(option, str) else [('class:' + option.color, option.text)], value = option.returnValue, description = option.description.replace('\n', '\n               ') if option.description else option.description) for option in options]
-    return questionary(title, menuOptions, instruction = help, qmark = '', style = mainStyle, default = default).ask()
+    result = questionary(title.replace('\n', '\n '), menuOptions, instruction = help, qmark = '', style = mainStyle, default = default).ask()
+    if result == None:
+        return menu(title, options, help, default)
+    if result == '!None':
+        return
+    return result
 
 def notReadyWarning():
     print('<dyellow>This feature is temporarily unavailable and will be coming in a future update.\nStay tuned!\n</dyellow>')
@@ -441,10 +480,27 @@ def rankingsMenu() -> int:
     clear()
     return toReturn
 
+def academyMenu():
+    '''
+    Generates offers made for the player from academies and lets the user select between them.
+    Returns the club that the user choosed.'''
+    hero.squad = 'U18s'
+    offersFrom = []
+    while len(offersFrom) < 2:
+        offersFrom = list(set(choices(Club.instances, [(i + (len(Club.instances) if club.nation is hero.nation else 1)) ** 1.5 for i, club in enumerate(Club.instances)], k=choice([2] * 3 + [3] * 4 + [4] * 2 + [5]))))
+    options = [MenuOption(club.ucName, club.colors[0], f'{club.ucName} want {hero.ucFullName} to join their academy.\nTheir senior team plays in the {club.league.ucName}.', club) for club in offersFrom] + [MenuOption('Reject all offers', 'dred', 'Reject all offers and stay without a club.', '!None')]
+    while True:
+        clear()
+        result = menu('Your skills have attracted interest from multiple clubs!\nChoose wisely where you want to start your career:', options)
+        if yesNoMenu(f'Are you sure you want to {f"sign a contract with {result.ucName}" if result else "stay a free agent"}?', default='No'):
+            break
+    input(f'\n{"<dgreen>Great choice!</dgreen>\n<dyellow>Now " if result else "<rorange>Bold choice...</rorange>\n<uorange>But, who knows, maybe, it will pay off?</uorange>\n<dyellow>Regardless, "}let\'s take a look at the hero\'s profile.</dyellow>\n<uyellow>Press Enter to continue:</uyellow> ')
+    return result
+
 ### Misc functions
 
 def viewNationRankings() -> None:
-    '''Prints the nation rankings.'''
+    '''Prints worldwide nation rankings.'''
     tableHeaders = ['№', Header('Code ', columnAlign = 'center'), 'Nation', 'Best league']
     tableRows = []
     for nation in Nation.instances:
@@ -452,7 +508,7 @@ def viewNationRankings() -> None:
     Table(tableRows, tableHeaders, '<uyellow>Worldwide national team rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').print(True)
 
 def viewLeagueRankings() -> None:
-    '''Prints the league rankings.'''
+    '''Prints worldwide league rankings.'''
     tableHeaders = ['№', Header('Rating', columnAlign = 'center'), 'Code', 'League', 'Best clubs']
     tableRows = []
     for i, league in enumerate(sorted(League.instances, key = lambda x: -x.rating), 1):
@@ -460,11 +516,11 @@ def viewLeagueRankings() -> None:
     Table(tableRows, tableHeaders, '<uyellow>Worldwide football league rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').print(True)
 
 def viewClubRankings() -> None:
-    '''Prints the club rankings.'''
-    tableHeaders = ['№', Header('Rating', columnAlign = 'center'), Header('Country', columnAlign = 'center'), 'Colors', Header('Code ', columnAlign = 'center'), 'Generic name', 'Full name', 'Nickname']
+    '''Prints worldwide club rankings.'''
+    tableHeaders = ['№', Header('Rating', columnAlign = 'center'), Header('League', columnAlign = 'center'), 'Colors', Header('Code ', columnAlign = 'center'), 'Generic name', 'Nickname']
     tableRows = []
     for i, club in enumerate(sorted(Club.instances, key = lambda x: -x.rating), 1):
-        tableRows.append([i, club.rating, club.nation.shortName, club.colorText('   ', bg = True) + club.color2Text('   ', bg = True), club.shortName, club.name, club.fullName, club.nickname])
+        tableRows.append([i, club.rating, club.league.shortName, club.colorText('   ', bg = True) + club.color2Text('   ', bg = True), club.shortName, club.name, club.nickname])
     Table(tableRows, tableHeaders, '<uyellow>Worldwide football club rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').print(True)
 
 def OPTAtoRating(optaPowerRanking) -> float:
@@ -482,57 +538,26 @@ def removeExtension(file: str, extension: str = FILE_EXTENSION) -> str:
     '''Removes the given extension from the given file path.'''
     return file.replace(extension, '')
 
-def importPackages():
-    '''Imports packages.'''
-    global inspect, print_formatted_text, prompt, WordCompleter, HTML, Style, osName, system, chdir, path, listdir
-    global getmtime, exists, fixWin, questionary, Choice, sysExit, datetime, format_exc
-    global sha3_224, random, shuffle, choice, choices, safe_load, safe_dump, Layout, get_terminal_size
-
-    from rich import inspect
-    yield
-    from rich.layout import Layout
-    yield
-
-    from prompt_toolkit import print_formatted_text, prompt
-    yield
-    from prompt_toolkit.completion import WordCompleter
-    yield
-    from prompt_toolkit.formatted_text import HTML
-    yield
-    from prompt_toolkit.styles import Style
-    yield
-
-    from os import name as osName, system, chdir, path, listdir, get_terminal_size
-    yield
-    from os.path import getmtime, exists
-    yield
-
-    from colorama import just_fix_windows_console as fixWin
-    yield
-    from questionary import select as questionary, Choice
-    yield
-    from random import random, shuffle, choice, choices
-    yield
-    from traceback import format_exc
-    yield
-    from yaml import safe_load, safe_dump
-    yield
-    from sys import exit as sysExit
-    yield
-    from datetime import datetime
-    yield
-    from hashlib import sha3_224
-    yield
-
 def progressBarSetting() -> bool:
-    '''Same as `settings.viewProgress` but works before `settings` was created.'''
+    '''Same as `settings.viewProgress` but works before `settings` were created.'''
     try:
-        with open(files['settings'], encoding = 'utf-8') as f:
-            return f.readlines()[3].find('Yes') != -1
+        try:
+            return settings.viewProgress
+        except:
+            with open(files['settings'], encoding = 'utf-8') as f:
+                return f.readlines()[3].find('Yes') != -1
     except:
         return False
 
-### Classes
+### Error classes
+
+class DatabaseError(ValueError):
+    pass
+
+class QuitError(Exception):
+    pass
+
+### Placeholder classes
 
 class Find:
     '''Placeholder for `find()`.'''
@@ -544,12 +569,12 @@ class Find:
         Each `cls` instance must have a `_searchOptions` attribute containing strings that the instance can be found by.
         All strings in `_searchOptions` must be uncolored and lowercase.
         '''
-        name = str(name).lower()
+        newName = str(name).lower()
         for obj in cls.instances:
-            if name in obj._searchOptions:
+            if newName in obj._searchOptions or name is obj:
                 return obj
         if allowExceptions:
-            raise Exception(f'Could not find a {cls.__name__.lower()} named "{name}".')
+            raise DatabaseError(f'Could not find a {cls.__name__.lower()} named "{name}".')
         return -1
 
 class ColorText:
@@ -561,6 +586,8 @@ class ColorText:
         if color == 'default':
             color = self.color
         return f'<{color}>{text}</{color}>'
+
+### Classes
 
 class Settings:
     '''
@@ -638,7 +665,7 @@ class Setting:
         self.setTo = data['setTo']
         self.values = data['values']
         if not self.setTo in self.values:
-            raise Exception(f'{self.name} setting: {self.setTo} is not in {self.values}.')
+            raise DatabaseError(f'{self.name} setting: {self.setTo} is not in {self.values}.')
     
     def view(self) -> str:
         '''Get the string representation of the setting that is suitable for showing to the user.'''
@@ -671,7 +698,7 @@ class MenuOption:
         Arguments:
             `text`: The text of the option.
             `color`: The color of the option. The option will have the default color if this is set to None.
-            `description: The description of the option. The option will not have a description if this is set to None.
+            `description`: The description of the option. The option will not have a description if this is set to None.
             `value`: Whatever `menu()` will return if the user chooses this option. `text` by default.
         '''
         if not value:
@@ -737,7 +764,7 @@ class Table:
                 except:
                     warning.append(key)
             if leftStyleKeys:
-                raise Exception(f'The table\'s style is missing the following key{"s" if len(leftStyleKeys) > 1 else ""}: {", ".join(leftStyleKeys)}.{f" Warning: your style has additional keys that are not necessary ({', '.join(warning)})." if warning else ""}')
+                raise ValueError(f'The table\'s style is missing the following key{"s" if len(leftStyleKeys) > 1 else ""}: {", ".join(leftStyleKeys)}.{f" Warning: your style has additional keys that are not necessary ({', '.join(warning)})." if warning else ""}')
         else:
             self.style = Table.defaultStyle
         
@@ -818,12 +845,13 @@ class Table:
     def print(self, inputToo: bool = False) -> None | str:
         '''
         Prints the table.
-        Returns the user input if `inputToo` is True.
+        Works like `input()` if `inputToo` is True.
         '''
-        for line in self.getPrintable().splitlines(inputToo):
-            print(line, end = '' if inputToo else '\n')
+        printable = self.getPrintable().splitlines()
+        for line in printable[:-1 if inputToo else len(printable)]:
+            print(line)
         if inputToo:
-            return input()
+            return input(self.caption + ('' if uncolorText(self.caption)[-1] == ' ' else ' '))
 
 class Header:
     '''
@@ -875,19 +903,23 @@ class Nation(ColorText, Find):
         `.names`: A list of all names of the nation.
         `.name`: The main name of the nation. Same as `.names[0]`.
         `.shortName`: A unique 3 letter code that can be used to identify the nation.
-        `.nationality: The nationality of people from the nation. Example: Finnish.
+        `.nationality`: The nationality of people from the nation. Example: Finnish.
+        `.firstNames`: A list of first names of people from the nation.
+        `.lastNames`: A list of last names of people from the nation.
         `.uc{attribute}`: Same as `.{attribute}` but uncolored.
         `.instances`: A list of all Nation instances.
     '''
     instances = []
-    def __init__(self, names: list[str], shortName: str, nationality: str, color: str, fifaRanking: int):
+    def __init__(self, names: list[str], shortName: str, nationality: str, color: str, fifaRanking: int, firstNames: list[str], lastNames: list[str]):
         '''
         Arguments:
-            `names`: All names of the nation.
+            `nationNames`: All names of the nation.
             `shortName`: A unique 3 letter code that can be used to identify the nation.
             `nationality`: The nationality of people from the nation. Example: Finnish.
             `color`: The main color of the nation.
             `fifaRanking`: The FIFA ranking of the nation.
+            `firstNames`: Some first names of the people of the nation.
+            `lastNames`: Some last names of the people of the nation.
         '''
         self.__class__.instances.append(self)
         self.color = color
@@ -901,6 +933,8 @@ class Nation(ColorText, Find):
         self.nationality = self.colorText(nationality)
         self.ucNationality = nationality
         self.fifaRanking = fifaRanking
+        self.firstNames = firstNames
+        self.lastNames = lastNames
         self.leagues = []
         self.clubs = []
         self._searchOptions = [str(self.fifaRanking), self.ucShortName.lower()] + [nationName.lower() for nationName in self.ucNames]
@@ -944,7 +978,7 @@ class Trait(ColorText, Find):
         for instance in cls.instances:
             longestName = max(longestName, len(instance.ucName))
         for instance in cls.instances:
-            print(f'{instance.num}{instance.colorText(".")}{"" if instance.ucNum >= 10 or len(Trait.instances) < 10 else " "} {instance.name}{" " * (longestName - len(instance.ucName))} {instance.colorText("-")} {instance.description}')
+            print(f'{instance.num}{instance.colorText(".")}{"" if instance.ucNum >= 10 or len(Trait.instances) < 10 else " "} {instance.name}{" " * (longestName - len(instance.ucName))} {instance.colorText("—")} {instance.description}')
 
 class Position(ColorText):
     '''
@@ -1058,18 +1092,22 @@ class Player:
 
     def viewProfile(self) -> None:
         '''Shows the profile of the player.'''
-        # input('\n' + '\n'.join([str(i) + '. ' + pos.shortName + ' ' + str(self.getPositionScore(pos)) for i, pos in enumerate(self.positions, 1)]) + '\n')
+        input('\n' + '\n'.join([str(i) + '. ' + pos.shortName + ' ' + str(self.getPositionScore(pos)) for i, pos in enumerate(self.positions, 1)]) + '\n')
         clear()
-        print(f'<bold>{(self.fullName + f"{SINGLE_QUOTE}s profile:").center(35 + len(self.fullName) - len(self.ucFullName))}</bold>\n')
-        print(f'<bold>Age:</bold>                <uyellow>{self.age}</uyellow>.')
-        print(f'<bold>Preferred position:</bold> {self.primaryPosition.name}.')
-        print(f'<bold>Other positions:</bold>    {self.formattedSecondaryPositions}.')
-        print(f'<bold>Fan description:</bold>    {self.description}.')
-        print(f'<bold>Nationality:</bold>        {self.nation.nationality}.\n')
+        print(f'''<bold>{(self.fullName + f"{SINGLE_QUOTE}s profile:").center(35 + len(self.fullName) - len(self.ucFullName))}</bold>
+
+<bold>Age:</bold>                <uyellow>{self.age}</uyellow>.
+<bold>Preferred position:</bold> {self.primaryPosition.name}.
+<bold>Other positions:</bold>    {self.formattedSecondaryPositions}.
+<bold>Fan description:</bold>    {self.description}.
+<bold>Nationality:</bold>        {self.nation.nationality}.
+<bold>Club:</bold>               {f'{self.club.name}{self.club.colorText(f"'{'' if self.club.ucName[-1] == 's' else 's'} {self.squad}")}' if self.club else 'none'}.
+<bold>League:</bold>             {self.club.league.name if self.club else 'none'}.
+''')
         Table(list(zip(Attributes + [PreferredFoot], self.attributes + [self.foot])), title = f'<uyellow>{type(self).__name__} attributes:</uyellow>').print()
-        print(f'\n<bold>{type(self).__name__} traits:</bold>')
+        print(f'\n<underline>The traits of the {type(self).__name__.lower()}:</underline>')
         for trait in self.traits:
-            print(f'{trait.name}{" " * (max([len(trait.ucName) for trait in self.traits]) - len(trait.ucName))} {trait.colorText("-")} {trait.description}')
+            print(f'{trait.name}{" " * (max([len(trait.ucName) for trait in self.traits]) - len(trait.ucName))} {trait.colorText("—")} {trait.description}')
         input('\n<uyellow>Press Enter to continue.</uyellow> ')
     
     def colorText(self, text: str) -> str:
@@ -1089,8 +1127,26 @@ class Hero (Player):
     The class for a hero.\n
     Shares all attributes with the Player class.
     '''
-    def __init__(self, mode: str, data: dict | None = None):
-        # insert the docstring here!
+    def __init__(self, data: dict):
+        '''
+        Creates a Hero object from the given `data`.\n
+        `data` must be a dictionary containing all attributes of the hero except his uncolored attributes,
+        age and potential. You can include these attributes in the dictionary, but they will be overwritten.
+        '''
+        data['nation'] = Nation.find(data['nation'], True)
+        data['traits'] = [trait if isinstance(trait, Trait) else Trait.instances[trait - 1] for trait in data['traits']]
+        self.__dict__ = data
+        self.ucFullName = uncolorText(self.fullName)
+        self.ucShirtName = uncolorText(self.shirtName)
+        super().__init__()
+        self.fullName, self.ucFullName = [self.colorText(self.fullName), self.fullName]
+        self.shirtName, self.ucShirtName = [self.colorText(self.shirtName), self.shirtName]
+
+    @classmethod
+    def fromInputs(cls):
+        '''
+        Constructs a Hero object from the inputs of the user and returns it.
+        '''
         def getAttribute(attribute: str, pointsSpent: int = 0, attributesLeft: int = 0) -> int:
             '''
             Makes the user select a value for the given attribute.\n
@@ -1102,13 +1158,13 @@ class Hero (Player):
             while True:
                 value = input(f'You have <uyellow>{ALL_POINTS - pointsSpent}</uyellow> points. How many will you allocate to {attribute}?{" (enter a number, then press Enter)" if not setupFiles and attributesLeft == 5 else ""} ')
                 if value == '/quit':
-                    raise EOFError
+                    raise QuitError
                 try:
                     value = int(value)
                     if lowerBound <= value <= upperBound:
                         return value
-                    raise Exception
-                except:
+                    raise ValueError
+                except ValueError:
                     print(f'<ured>You need to input a number between {lowerBound} and {upperBound}.\nAll points have to be used.</ured>\n')
 
         def getTrait(message: str):
@@ -1120,109 +1176,109 @@ class Hero (Player):
             while True:
                 traitNum = input(message)
                 if traitNum == '/quit':
-                    raise EOFError
+                    raise QuitError
                 try:
                     traitNum = int(traitNum)
                     result = Trait.instances[traitNum - 1]
                     if 1 <= traitNum:
-                        if result in self.traits:
+                        if result in data['traits']:
                             print(f'<ured>You already selected {result.name}.</ured>')
                             continue
-                        self.traits.append(result)
+                        data['traits'].append(result)
                         break
-                    raise Exception
-                except:
+                    raise ValueError
+                except ValueError:
                     print(f'<ured>You need to input a number between 1 and {len(Trait.instances)} which corresponds to a trait.</ured>\n')
 
-        match mode:
-            case 'fromInputs':
-                clear()
-                menu('If you want to quit to the main menu, type /quit instead of your input.', [MenuOption('Got it!', color = 'dgreen')])
-                clear()
-                print('<bold>Step 1. Who is your hero?</bold>\n\n')
-                while True:
-                    self.fullName = input(f'<uyellow>Enter his full name{" (press Enter to confirm)" if not setupFiles else ""}:</uyellow> ')
-                    if self.fullName == '/quit':
-                        raise EOFError
-                    if len(self.fullName.replace(' ', '')) < 2:
-                        print('<ured>The hero\'s full name must be at least 2 characters long.</ured>\n\n')
-                        continue
-                    try:
-                        self.fullName.encode()
-                    except:
-                        print('<ured>This full name contains invalid characters.\nPlease pick a different one.</ured>')
-                        continue
-                    self.shirtName = self.fullName.split()
-                    self.shirtName = self.shirtName[-1] if len(self.shirtName) > 1 else self.fullName
-                    snUserSuggestion = input(f'\n<uyellow>Enter his shirt name{" (you can edit this text!)" if not setupFiles else ""}:</uyellow> ', default=self.shirtName)
-                    if snUserSuggestion == '/quit':
-                        raise EOFError
-                    if len(snUserSuggestion.replace(' ', '')) < 2:
-                        print('<ured>The hero\'s shirt name must be at least 2 characters long.</ured>', '\n\n')
-                        continue
-                    self.shirtName = snUserSuggestion
-                    try:
-                        self.shirtName.encode()
-                    except:
-                        print('<ured>This shirt name contains invalid characters.\nPlease pick a different one.</ured>')
-                        continue
-                    while True:
-                        nationSuggestion = input(f'<uyellow>\nEnter his nation\'s name or code{" (type the beginning, then use arrow keys)" if not setupFiles else ""}:</uyellow> ', completer = WordCompleter(nationNames, ignore_case = True)).lower()
-                        if nationSuggestion == '/quit':
-                            raise EOFError
-                        self.nation = Nation.find(nationSuggestion)
-                        if self.nation != -1:
-                            break
-                        print('\n<ured>Sorry, we could not find your nation. Please make sure that they are a member of FIFA.</ured>\n\n')
-                    print(f'\n\n<uyellow>Let\'s check.</uyellow>\nThe hero\'s full name is {self.fullName}.\nHis shirt name is {self.shirtName}.\nHis nation is {self.nation.name}.')
-                    if yesNoMenu('Is everything here correct?'):
-                        break
-                    print('\n\n')
-                
-                clear()
-                print('<bold>Step 2. Time to determine his strengths and weaknesses!</bold>\n\n')
-                while True:
-                    print(f'You have <uyellow>{ALL_POINTS}</uyellow> points to allocate.\nThey must be distributed among 6 attributes: {pace}, {shooting}, {passing}, {dribbling}, {defending} and {physicality}.\nEach attribute must have from <uyellow>{MIN_POINTS}</uyellow> to <uyellow>{MAX_POINTS}</uyellow> points assigned to it.\n')
-                    self.pac = getAttribute(pace, attributesLeft = 5)
-                    self.sho = getAttribute(shooting, self.pac, 4)
-                    self.pas = getAttribute(passing, self.pac + self.sho, 3)
-                    self.dri = getAttribute(dribbling, self.pac + self.sho + self.pas, 2)
-                    self.dfn = getAttribute(defending, self.pac + self.sho + self.pas + self.dri, 1)
-                    self.phy = getAttribute(physicality, self.pac + self.sho + self.pas + self.dri + self.dfn)
-                    self.foot = menu('Choose the preferred foot of your hero!', [MenuOption('left', color = 'uyellow', value = 'left'), MenuOption('right', color = 'uyellow', value = 'right')])
-                    print(f'\n\n<uyellow>Let\'s check.</uyellow>')
-                    Table(list(zip(Attributes + [PreferredFoot], self.attributes + [self.foot])), title = f'<uyellow>The hero\'s attributes are:</uyellow>').print()
-                    if yesNoMenu('Is everything here correct?'):
-                        break
-                    print('\n\n')
+        data = {}
 
-                clear()
-                while True:
-                    print(f'<bold>Step 3. And, finally, let\'s look at his traits!</bold>\n\n<uyellow>Pick 3 traits for your hero.</uyellow>\n')
-                    Trait.printInstances()
-                    print(f'\nInput the trait number, for example, <uyellow>1</uyellow> for {Trait.instances[0].name}, <uyellow>2</uyellow> for {Trait.instances[1].name} and so on.\n')
-                    self.traits = []
-                    for i, message in enumerate(['What trait do you pick?', 'Pick another one!', 'And the last one:'], 1):
-                        getTrait(f'<uyellow>({i}/3) {message}</uyellow> ')
-                    self.traits = sorted(self.traits, key = lambda x: x.ucNum)
+        clear()
+        menu('If you want to quit to the main menu, type /quit instead of your input.', [MenuOption('Got it!', color = 'dgreen')])
+        clear()
+        print('<bold>Step 1. Who is your hero?</bold>\n\n')
+        while True:
+            data['fullName'] = input(f'<uyellow>Enter his full name{" (press Enter to confirm)" if not setupFiles else ""}:</uyellow> ')
+            if data['fullName'] == '/quit':
+                raise QuitError
+            if len(data['fullName'].replace(' ', '')) < 2:
+                print('<ured>The hero\'s full name must be at least 2 characters long.</ured>\n\n')
+                continue
+            try:
+                data['fullName'].encode()
+            except:
+                print('<ured>This full name contains invalid characters.\nPlease pick a different one.</ured>')
+                continue
+            data['shirtName'] = data['fullName'].split()
+            data['shirtName'] = data['shirtName'][-1] if len(data['shirtName']) > 1 else data['fullName']
+            snUserSuggestion = input(f'\n<uyellow>Enter his shirt name{" (you can edit this text!)" if not setupFiles else ""}:</uyellow> ', default=data['shirtName'])
+            if snUserSuggestion == '/quit':
+                raise QuitError
+            if len(snUserSuggestion.replace(' ', '')) < 2:
+                print('<ured>The hero\'s shirt name must be at least 2 characters long.</ured>', '\n\n')
+                continue
+            data['shirtName'] = snUserSuggestion
+            try:
+                data['shirtName'].encode()
+            except:
+                print('<ured>This shirt name contains invalid characters.\nPlease pick a different one.</ured>')
+                continue
+            while True:
+                nationSuggestion = input(f'<uyellow>\nEnter his nation\'s name or code{" (type the beginning, then use arrow keys)" if not setupFiles else ""}:</uyellow> ', completer = WordCompleter(nationNames, ignore_case = True)).lower()
+                if nationSuggestion == '/quit':
+                    raise QuitError
+                data['nation'] = Nation.find(nationSuggestion)
+                if data['nation'] != -1:
+                    break
+                print('\n<ured>Sorry, we could not find your nation. Please make sure that they are a member of FIFA.</ured>\n\n')
+            print(f'\n\n<uyellow>Let\'s check.</uyellow>\nThe hero\'s full name is {data['fullName']}.\nHis shirt name is {data['shirtName']}.\nHis nation is {data['nation'].name}.')
+            if yesNoMenu('Is everything here correct?'):
+                break
+            print('\n\n')
+        
+        clear()
+        print('<bold>Step 2. Time to determine his strengths and weaknesses!</bold>\n\n')
+        while True:
+            print(f'You have <uyellow>{ALL_POINTS}</uyellow> points to allocate.\nThey must be distributed among 6 attributes: {pace}, {shooting}, {passing}, {dribbling}, {defending} and {physicality}.\nEach attribute must have from <uyellow>{MIN_POINTS}</uyellow> to <uyellow>{MAX_POINTS}</uyellow> points assigned to it.\n')
+            data['pac'] = getAttribute(pace, attributesLeft = 5)
+            data['sho'] = getAttribute(shooting, data['pac'], 4)
+            data['pas'] = getAttribute(passing, data['pac'] + data['sho'], 3)
+            data['dri'] = getAttribute(dribbling, data['pac'] + data['sho'] + data['pas'], 2)
+            data['dfn'] = getAttribute(defending, data['pac'] + data['sho'] + data['pas'] + data['dri'], 1)
+            data['phy'] = getAttribute(physicality, data['pac'] + data['sho'] + data['pas'] + data['dri'] + data['dfn'])
+            data['foot'] = menu('Choose the preferred foot of your hero!', [MenuOption('left', color = 'uyellow', value = 'left'), MenuOption('right', color = 'uyellow', value = 'right')])
+            print(f'\n\n<uyellow>Let\'s check.</uyellow>')
+            Table(list(zip(Attributes + [PreferredFoot], [data['pac'], data['sho'], data['pas'], data['dri'], data['dfn'], data['phy'], data['foot']])), title = f'<uyellow>The hero\'s attributes are:</uyellow>').print()
+            if yesNoMenu('Is everything here correct?'):
+                break
+            print('\n\n')
 
-                    print(f'\n\n<uyellow>Let\'s check.</uyellow>\nThe hero\'s traits are: {self.traits[0].name}, {self.traits[1].name}, {self.traits[2].name}.')
-                    if yesNoMenu('Is everything here correct?'):
-                        break
-                    print('\n\n')
+        clear()
+        while True:
+            print(f'<bold>Step 3. And, finally, let\'s look at his traits!</bold>\n\n<uyellow>Pick 3 traits for your hero.</uyellow>\n')
+            Trait.printInstances()
+            print(f'\nInput the trait number, for example, <uyellow>1</uyellow> for {Trait.instances[0].name}, <uyellow>2</uyellow> for {Trait.instances[1].name} and so on.\n')
+            data['traits'] = []
+            for i, message in enumerate(['What trait do you pick?', 'Pick another one!', 'And the last one:'], 1):
+                getTrait(f'<uyellow>({i}/3) {message}</uyellow> ')
+            data['traits'] = sorted(data['traits'], key = lambda x: x.ucNum)
 
-            case 'fromDict':
-                data['nation'] = Nation.find(data['nation'], True)
-                data['traits'] = [Trait.instances[trait - 1] for trait in data['traits']]
-                self.__dict__ = data
-                self.ucFullName = uncolorText(self.fullName)
-                self.ucShirtName = uncolorText(self.shirtName)
-
-            case _:
-                raise Exception(f'Hero(): invalid "mode" argument ({mode}).')
-        super().__init__()
-        self.fullName, self.ucFullName = [self.colorText(self.fullName), self.fullName]
-        self.shirtName, self.ucShirtName = [self.colorText(self.shirtName), self.shirtName]
+            print(f'\n\n<uyellow>Let\'s check.</uyellow>\nThe hero\'s traits are: {', '.join(map(lambda x: x.name, data['traits']))}.')
+            if yesNoMenu('Is everything here correct?'):
+                break
+            print('\n\n')
+        
+        try:
+            hero = Hero(data)
+            print('<dgreen>Your hero was successfully created!</dgreen>')
+            sleep(2)
+            return hero
+        except Exception as e:
+            print(f'<dred>An error occured while saving your hero:</dred>\n')
+            origPrint(e)
+            if DEV_MODE:
+                origPrint(format_exc())
+            input('<uyellow>Press Enter to continue:</uyellow> ')
+            raise QuitError
 
     def toDict(self) -> dict:
         '''Returns itself as a dictionary that is ready to be used for saving.'''
@@ -1261,7 +1317,6 @@ class Club(Find):
             `shortName`: A unique 3 letter code that can be used to identify the club.
             `colors`: A list of the main colors of the club.
         '''
-        self.__class__.instances.append(self)
         self.rating = ovr
         self.colors = colors
         self.ucName = names[0]
@@ -1274,7 +1329,10 @@ class Club(Find):
         self.ucNickname = nickname
         self.shortName = self.colorText(shortName)
         self.ucShortName = shortName
+        if self.ucName.lower() == 'free agents':
+            return
         self._searchOptions = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
+        self.__class__.instances.append(self)
     
     def colorText(self, text, bg = False) -> str:
         '''
@@ -1358,21 +1416,6 @@ class League(Find):
     @property
     def sortedClubs(self):
         return sorted(self.clubs, key = lambda x: -x.rating)
-
-### Imports
-
-if progressBarSetting():
-    with Progress() as bar:
-        importCount = 19
-        completedCount = 3
-        task = bar.add_task('[green]Importing code other people wrote...', total = importCount, completed = completedCount)
-        
-        for _ in importPackages():
-            bar.update(task, advance = 1)
-        bar.advance(task, 1)
-else:
-    for _ in importPackages():
-        pass
     
 ### Preset variables
 
@@ -1393,7 +1436,7 @@ Attributes = [Pace, Shooting, Passing, Dribbling, Defending, Physicality]
 
 fixWin()
 chdir(path.dirname(path.abspath(__file__)))
-settings, mainStyleDict = parseDatabase(list(files.values()) + list(dirs.values()), [createNations, createLeagues, createPositions, createTraits, Settings, createStyle], [files['settings'], files['style']])
+settings, mainStyleDict = parseDatabase(list(files.values()) + list(dirs.values()), [Settings, createStyle, createNations, createLeagues, createPositions, createTraits, ], [files['settings'], files['style']])
 mainStyle = Style.from_dict(mainStyleDict)
 
 nationNames = [str(nation.fifaRanking) for nation in Nation.instances]
@@ -1429,7 +1472,7 @@ while True:
             case 3:
                 if setupFiles and not yesNoMenu('Are you sure you want to create a new hero?', default = 'No'):
                     continue
-                hero = Hero('fromInputs')
+                hero = Hero.fromInputs()
                 saveSetup(hero)
             case 4:
                 settings.edit()
@@ -1447,9 +1490,10 @@ while True:
                         case -1:
                             break
                 continue
-    except EOFError:
+    except QuitError:
         continue
+    hero.club = academyMenu()
     hero.viewProfile()
-    
+
     clear()
     input('<dred>There will be a career here soon... For now, though, press Enter:</dred> ')

@@ -14,7 +14,7 @@
 # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 # rating    - the club's rating
 #             (write it normally if this should be the in-game rating as in 87.0 or 
-#             append a ! at the end as in 100.0! if this should be the OPTA power ranking,
+#             append a ! at the end as in 100.0! to indicate that this is the OPTA power ranking,
 #             it will automatically be converted to the in-game rating);
 # shortName - the club's short name (must be unique and 3 letters long);
 # fullName  - the club's official name;
@@ -24,7 +24,7 @@
 # nickname  - a generic club name that has no relation to its official name and is accepted by its supporters
 #             (ex. The Gunners for Arsenal, Los Blancos for Real Madrid; must be < 25 characters long);
 # colors    - two of the club's main colors
-#             (must be taken from customisation/style.db; examples: dred and uwhite (not dark red and usual white!),
+#             (must be taken from customisation/style.db; examples: dred and uwhite (not dark red and white!),
 #             rorange and gcyan (not reddish orange and greenish cyan!)).
 # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 - name: Premier League
@@ -1578,7 +1578,7 @@
   clubs:
   - rating: 82.4
     shortName: SLB
-    fullName: Sport Lisboa e Benfica SAD
+    fullName: Sport Lisboa e Benfica S.A.D.
     names:
     - Benfica
     nickname: As Águias
@@ -1587,7 +1587,7 @@
     - uwhite
   - rating: 82.1
     shortName: SPO
-    fullName: Sporting Clube de Portugal SAD
+    fullName: Sporting Clube de Portugal S.A.D.
     names:
     - Sporting
     - Sporting Lisbon
@@ -1597,7 +1597,7 @@
     - uwhite
   - rating: 79.2
     shortName: FCP
-    fullName: Futebol Clube do Porto SAD
+    fullName: Futebol Clube do Porto S.A.D.
     names:
     - Porto
     nickname: Os Dragões
@@ -1606,7 +1606,7 @@
     - uwhite
   - rating: 78.7
     shortName: SCB
-    fullName: Sporting Clube de Braga SAD
+    fullName: Sporting Clube de Braga S.A.D.
     names:
     - Braga
     nickname: Os Arsenalistas
@@ -1615,7 +1615,7 @@
     - uwhite
   - rating: 77.0
     shortName: VSC
-    fullName: Vitória Sport Clube SAD
+    fullName: Vitória Sport Clube S.A.D.
     names:
     - Vitória
     - Vitoria
@@ -1626,7 +1626,7 @@
     - ured
   - rating: 75.4
     shortName: FCF
-    fullName: Futebol Clube de Famalicão SAD
+    fullName: Futebol Clube de Famalicão S.A.D.
     names:
     - Famalicão
     - Famalicao
@@ -1636,7 +1636,7 @@
     - ured
   - rating: 75.2
     shortName: SAC
-    fullName: Clube Desportivo Santa Clara SAD
+    fullName: Clube Desportivo Santa Clara S.A.D.
     names:
     - Santa Clara
     nickname: Os Açoreanos
@@ -1645,7 +1645,7 @@
     - uwhite
   - rating: 74.4
     shortName: EST
-    fullName: Grupo Desportivo Estoril Praia SAD
+    fullName: Grupo Desportivo Estoril Praia S.A.D.
     names:
     - Estoril Praia
     - Estoril
@@ -1656,7 +1656,7 @@
     - ublue
   - rating: 74.2
     shortName: MOR
-    fullName: Moreirense Futebol Clube SAD
+    fullName: Moreirense Futebol Clube S.A.D.
     names:
     - Moreirense
     nickname: Os Verdes e Brancos
@@ -1665,7 +1665,7 @@
     - uwhite
   - rating: 74.2
     shortName: ARU
-    fullName: Futebol Clube de Arouca SAD
+    fullName: Futebol Clube de Arouca S.A.D.
     names:
     - Arouca
     nickname: Os Arouquenses
@@ -1674,7 +1674,7 @@
     - ublack
   - rating: 74.0
     shortName: CAS
-    fullName: Casa Pia Atlético Clube SAD
+    fullName: Casa Pia Atlético Clube S.A.D.
     names:
     - Casa Pia
     nickname: Os Gansos
@@ -1683,7 +1683,7 @@
     - uwhite
   - rating: 73.9
     shortName: RIO
-    fullName: Rio Ave Futebol Clube SAD
+    fullName: Rio Ave Futebol Clube S.A.D.
     names:
     - Rio Ave
     nickname: Os Rioavistas
@@ -1692,7 +1692,7 @@
     - uwhite
   - rating: 73.4
     shortName: GIL
-    fullName: Gil Vicente Futebol Clube SAD
+    fullName: Gil Vicente Futebol Clube S.A.D.
     names:
     - Gil Vicente
     - Gil
@@ -1703,7 +1703,7 @@
     - uwhite
   - rating: 73.0
     shortName: CDT
-    fullName: Clube Desportivo Tondela SAD
+    fullName: Clube Desportivo Tondela S.A.D.
     names:
     - Tondela
     nickname: Os Auriverdes
@@ -1712,7 +1712,7 @@
     - ugreen
   - rating: 72.8
     shortName: ALV
-    fullName: Futebol Clube Alverca SAD
+    fullName: Futebol Clube Alverca S.A.D.
     names:
     - Alverca
     nickname: Os Alverquenses
@@ -1721,7 +1721,7 @@
     - uwhite
   - rating: 72.7
     shortName: MAR
-    fullName: Club Sport Marítimo SAD
+    fullName: Club Sport Marítimo S.A.D.
     names:
     - Nacional Madeira
     - Madeira
@@ -1731,7 +1731,7 @@
     - ured
   - rating: 71.7
     shortName: ESA
-    fullName: Clube de Futebol Estrela da Amadora SAD
+    fullName: Clube de Futebol Estrela da Amadora S.A.D.
     names:
     - Estrela da Amadora
     nickname: Os Tricolores
@@ -1740,7 +1740,7 @@
     - uwhite
   - rating: 71.5
     shortName: AVS
-    fullName: Agrupamento Vertical de Sportinguistas SAD
+    fullName: Agrupamento Vertical de Sportinguistas S.A.D.
     names:
     - AVS
     nickname: Os Sportinguistas

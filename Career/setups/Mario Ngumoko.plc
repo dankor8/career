@@ -1,0 +1,18 @@
+hero:
+  fullName: Mario Ngumoko
+  shirtName: Ngumoko
+  nation: Nigeria
+  pac: 45
+  sho: 35
+  pas: 65
+  dri: 45
+  dfn: 50
+  phy: 60
+  foot: right
+  traits:
+  - 1
+  - 2
+  - 3
+  age: 16
+time: 1756550197.572342
+hash: e0c31dd7f870c4f8321c81e73a1070aca21e7dd2b4f9c2929b44464b

@@ -1,0 +1,18 @@
+hero:
+  fullName: Matvey Khuziy
+  shirtName: Khuziy
+  nation: Kazakhstan
+  pac: 40
+  sho: 60
+  pas: 40
+  dri: 50
+  dfn: 30
+  phy: 80
+  foot: left
+  traits:
+  - 1
+  - 4
+  - 24
+  age: 16
+time: 1756495810.630256
+hash: bb0b6fad4ae4888cb9fec0d5fe0f4225d7ffa823685c543330135e8d

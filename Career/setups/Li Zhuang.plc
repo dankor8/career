@@ -1,0 +1,18 @@
+hero:
+  fullName: Li Zhuang
+  shirtName: Zhuang
+  nation: China
+  pac: 70
+  sho: 40
+  pas: 50
+  dri: 60
+  dfn: 40
+  phy: 40
+  foot: left
+  traits:
+  - 5
+  - 11
+  - 21
+  age: 16
+time: 1756495486.339157
+hash: b7c20e825d4cdcd6400ccc924cc16f9a027a83f2a957aaf86e211857
