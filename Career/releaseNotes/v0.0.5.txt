@@ -1,0 +1,6 @@
+- Added player generation! That includes:
+  - 30000 first names and last names that could be used to generate full names of players.
+  - 10000 different frames to generate player attributes.
+  - A lot of mathematical formulas. Really. A lot.
+  - And much more!
+- Misc changes (bugfixes, some colors were added or changed, etc.)

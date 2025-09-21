@@ -46,25 +46,25 @@
   category: Attacking
 - name: Cross
   description: The player is capable of delivering dangerous crosses with varied technique.
-  color: umagenta
+  color: ucyan
   category: Technical
 - name: Flair
   description: The player often attempts audacious passes and shots.
-  color: umagenta
+  color: ucyan
   category: Technical
 - name: Hawk
   description: The player can easily spot passing lanes, executing killer through
     balls.
-  color: umagenta
+  color: ucyan
   category: Technical
 - name: Trickster
   description: The player is good at performing skill moves in 1v1 situations.
-  color: umagenta
+  color: ucyan
   category: Technical
 - name: Weak Foot
   description: The player is nearly ambidextrous, able to shoot and pass effectively
     with either foot.
-  color: umagenta
+  color: ucyan
   category: Technical
 - name: Block
   description: The player is an expert at positioning himself well in order to block

@@ -10,6 +10,7 @@
     physicality: 0.18
     leftFoot: 0.0
     rightFoot: 0.0
+  setPieceKoe: 0.1
   modifier: 0.7
 - name: left winger
   shortName: LW
@@ -23,6 +24,7 @@
     physicality: 0.06
     leftFoot: 0.01
     rightFoot: 0.0
+  setPieceKoe: 0.12
   modifier: 0.0
 - name: right winger
   shortName: RW
@@ -36,6 +38,7 @@
     physicality: 0.06
     leftFoot: 0.0
     rightFoot: 0.01
+  setPieceKoe: 0.06
   modifier: -0.2
 - name: attacking midfielder
   shortName: CAM
@@ -49,6 +52,7 @@
     physicality: 0.15
     leftFoot: 0.0
     rightFoot: 0.0
+  setPieceKoe: 0.25
   modifier: 1.0
 - name: center midfielder
   shortName: CM
@@ -62,6 +66,7 @@
     physicality: 0.18
     leftFoot: 0.0
     rightFoot: 0.0
+  setPieceKoe: 0.3
   modifier: 1.5
 - name: defensive midfielder
   shortName: CDM
@@ -75,33 +80,36 @@
     physicality: 0.22
     leftFoot: 0.0
     rightFoot: 0.0
+  setPieceKoe: 0.2
   modifier: 1.0
 - name: left back
   shortName: LB
   color: ygreen
   weightings:
     pace: 0.22
-    shooting: 0.05
-    passing: 0.2
+    shooting: 0.04
+    passing: 0.18
     dribbling: 0.2
-    defending: 0.2
+    defending: 0.23
     physicality: 0.12
     leftFoot: 0.01
     rightFoot: 0.0
-  modifier: 1.0
+  setPieceKoe: 0.1
+  modifier: 0.9
 - name: right back
   shortName: RB
   color: ygreen
   weightings:
     pace: 0.22
-    shooting: 0.05
-    passing: 0.2
+    shooting: 0.04
+    passing: 0.18
     dribbling: 0.2
-    defending: 0.2
+    defending: 0.23
     physicality: 0.12
     leftFoot: 0.0
     rightFoot: 0.01
-  modifier: 0.8
+  setPieceKoe: 0.05
+  modifier: 0.7
 - name: center back
   shortName: CB
   color: dgreen
@@ -114,4 +122,5 @@
     physicality: 0.28
     leftFoot: 0.0
     rightFoot: 0.0
+  setPieceKoe: 0.005
   modifier: 0.0
