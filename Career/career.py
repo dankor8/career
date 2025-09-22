@@ -12,7 +12,7 @@ from prompt_toolkit.completion import WordCompleter
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
-from os import name as osName, system, listdir, path, chdir
+from os import name as osName, system, listdir, path, chdir, get_terminal_size as terminalSize
 from os.path import getmtime, exists
 
 from random import random, choice, choices, randint, normalvariate
@@ -55,6 +55,7 @@ origPrint = print
 origInput = input
 DOUBLE_BACKSLASH_N = '\\n'
 BACKSLASH_N = '\n'
+LINE = '\u2500'
 SLASH = '/'
 SINGLE_QUOTE = "'"
 LESS = '&lt;'
@@ -128,11 +129,16 @@ def uncolorText(text: str) -> str:
         pass
     return text
 
-def alignText(text: str, width: int, align: str, fill = ' ') -> str:
+def alignText(text: str, width: int, align: str, fill = ' ', autoFix = True) -> str:
     '''
     Returns aligned `text`. Designed to work with colored text.\n
-    Align must be 'left', 'center' or 'right'.
+    Align must be 'left', 'center' or 'right'.\n
+    If `autoFix` is True and `fill` is not ' ', adds spaces between the fill and the separators to make the output look nicer. Set `autoFix` to False to disable this.\n
+    alignText('My liney header', 25, 'center', fill='\u2500') -> '\u2500\u2500\u2500\u2500 My liney header \u2500\u2500\u2500\u2500'\n
+    alignText('My liney header', 25, 'center', fill='\u2500', autoFix=False) -> '\u2500\u2500\u2500\u2500\u2500My liney header\u2500\u2500\u2500\u2500\u2500'
     '''
+    if fill != ' ' and text and autoFix:
+        text = f'{" " if align in ["center", "right"] else ""}{text}{" " if align in ["center", "left"] else ""}'
     newWidth = width + len(text) - len(uncolorText(text))
     match align.lower():
         case 'left':
@@ -145,11 +151,12 @@ def alignText(text: str, width: int, align: str, fill = ' ') -> str:
             raise ValueError(f'alignText(): align must be "left", "center" or "right", not {align}.')
     return text
 
-def colorSettingValue(value: str, mode: str = 'html') -> str | list | None:
+def colorSettingValue(value: str, mode: str = 'html') -> str | list[str]:
     '''
     Returns colored `value` (Yes in green for Yes, No in red for No, etc).\n
     `mode` must be 'html' or 'color'.\n
-    If mode is 'html' (default), returns `value` that is colored using prompt_toolkit's HTML format.
+    If `mode` is 'html' (default), returns `value` that is colored using prompt_toolkit's HTML format.\n
+    If `mode` is 'color', returns [`value`, `color`], where `color` is 'green', for example.
     '''
     match mode:
         case 'html':
@@ -164,7 +171,6 @@ def colorSettingValue(value: str, mode: str = 'html') -> str | list | None:
                 return [value, 'red']
         case _:
             raise ValueError(f'colorSettingValue(): mode must be "html" or "color", not {mode}.')
-    return None
 
 def clear() -> None:
     '''Clears the terminal.'''
@@ -318,14 +324,18 @@ def createLeagues(progress: bool = False, bar = None, task = None, value: int | 
             foreignPercent = 1 - (club.rating - 40) ** 1.5 / 500 - max(0, club.rating - 80) ** 2 / 300
             club.players = []
             playerCount = randint(26, 41)
+            positionProbs = {pos: 1 for pos in Position.instances}
             for i in range(playerCount):
                 i *= 40 / (playerCount - 1)
+                pos = choices(list(positionProbs.keys()), list(positionProbs.values()))[0]
+                positionProbs[pos] /= 2
                 club.players.append(Player(
                     leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, [(len(Nation.instances) - j + 100) ** 8 for j in range(101, len(Nation.instances) + 101)])[0],
                     round(club.rating - i ** .5 - i / 2.7 + 3.9),
                     round(club.rating - i ** .5),
-                    max(15, round(normalvariate(29 - (i + 1) ** 3 / 6400, 3.5))),
-                    club.rating
+                    pos,
+                    max(15, round(normalvariate(29 - (i + 1) ** 3 / 6400, 3.5 + i / 20))),
+                    club.rating,
                 ))
                 club.players[-1].club = club
         League(leagueData['name'], leagueData['nation'], leagueClubs)
@@ -494,14 +504,14 @@ def menu(title: str, options: list, help: str = ' ', default = None):
 
 def notReadyWarning():
     print('<dyellow>This feature is temporarily unavailable and will be coming in a future update.\nStay tuned!\n</dyellow>')
-    input('<yellow>Press Enter to continue.</yellow> ')
+    input('<uyellow>Press Enter to continue.</uyellow> ')
 
 def raiseFatalError() -> None:
     '''Exits the application after an error.'''
     origInput('\nPress Enter to terminate the application. ')
     sysExit()
 
-### Menus
+### Menus and rankings
 
 def yesNoMenu(text, default = 'Yes') -> bool:
     '''
@@ -599,15 +609,13 @@ def academyMenu(hero: dict):
     print(f'\n{"<dgreen>Great choice!</dgreen>\n<dyellow>Now " if result else "<rorange>Bold choice...</rorange>\n<uorange>But, who knows, maybe, it will pay off?</uorange>\n<dyellow>Regardless, "}let\'s continue!</dyellow>')
     return result
 
-### Misc functions
-
 def viewNationRankings() -> None:
     '''Prints worldwide nation rankings.'''
     tableHeaders = ['№', Header('Code ', columnAlign = 'center'), 'Nation', 'Best league']
     tableRows = []
     for nation in Nation.instances:
-        tableRows.append([nation.fifaRanking, nation.shortName, nation.name, nation.leagues[0].name if nation.leagues else '!fill —', ])
-    Table(tableRows, tableHeaders, '<uyellow>Worldwide national team rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
+        tableRows.append([nation.fifaRanking, nation.shortName, nation.name, nation.leagues[0].name if nation.leagues else f'!fill {LINE}', ])
+    Table(tableRows, tableHeaders, '<bold>Worldwide national team rankings:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 def viewLeagueRankings(mode = 'average') -> None:
     '''Prints worldwide league rankings.'''
@@ -615,7 +623,7 @@ def viewLeagueRankings(mode = 'average') -> None:
     tableRows = []
     for i, league in enumerate(sorted(League.instances, key = lambda x: x.getRating(mode), reverse=True), 1):
         tableRows.append([i, str(league.getRating(mode)).ljust(5, '0'), league.shortName, league.name, ', '.join([club.name for club in league.sortedClubs[:3]])])
-    Table(tableRows, tableHeaders, '<uyellow>Worldwide football league rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
+    Table(tableRows, tableHeaders, '<bold>Worldwide football league rankings:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 def viewClubRankings() -> None:
     '''Prints worldwide club rankings.'''
@@ -623,7 +631,9 @@ def viewClubRankings() -> None:
     tableRows = []
     for i, club in enumerate(sorted(Club.instances, key = lambda x: x.rating, reverse=True), 1):
         tableRows.append([i, club.rating, club.league.shortName, club.colorText('   ', bg = True) + club.color2Text('   ', bg = True), club.shortName, club.name, club.nickname])
-    Table(tableRows, tableHeaders, '<uyellow>Worldwide football club rankings:</uyellow>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
+    Table(tableRows, tableHeaders, '<bold>Worldwide football club rankings:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
+
+### Misc functions
 
 def OPTAtoRating(optaPowerRanking) -> float:
     '''
@@ -650,6 +660,12 @@ def progressBarSetting() -> bool:
                 return f.readlines()[3].find('Yes') != -1
     except:
         return False
+
+def terminalWidth() -> int:
+    return terminalSize()[0]
+
+def terminalHeight() -> int:
+    return terminalSize()[1]
 
 ### Error classes
 
@@ -854,7 +870,8 @@ class Table:
     'dataHor': '─',
     'dataVert': '│',
 
-    'fill': ' '}
+    'fill': ' ',
+    'headerFill': ' ',}
 
     def __init__(self, data: list, headers: list | None = None, title: str | None = None, caption: str | None = None, style: dict[str: str] = None):
         '''
@@ -911,7 +928,7 @@ class Table:
         if not self.title:
             table = ''
         else:
-            table = alignText(self.title, len(columnLens) * 3 + sum(columnLens) + 1, 'center') + '\n'
+            table = alignText(self.title, len(columnLens) * 3 + sum(columnLens) + 1, 'center', self.style['headerFill']) + '\n'
 
         if not self.noHeaders:
             table += f"{self.style['leftTop']}"
@@ -1092,7 +1109,7 @@ class Trait(ColorText, Find):
         for instance in cls.instances:
             longestName = max(longestName, len(instance.ucName))
         for instance in cls.instances:
-            print(f'{instance.num}{instance.colorText(".")}{"" if instance.ucNum >= 10 or len(Trait.instances) < 10 else " "} {instance.name}{" " * (longestName - len(instance.ucName))} {instance.colorText("—")} {instance.description}')
+            print(f'{instance.num}{instance.colorText(".")}{"" if instance.ucNum >= 10 or len(Trait.instances) < 10 else " "} {instance.name}{" " * (longestName - len(instance.ucName))} {instance.colorText(LINE)} {instance.description}')
 
 class Position(ColorText):
     '''
@@ -1131,7 +1148,7 @@ class Position(ColorText):
 class Player(ColorText):
     # TODO Add the docstring here!
     instances = []
-    def __init__(self, nation, rating, potential, age = 16, clubRating = None, squad = ''):
+    def __init__(self, nation: Nation, rating: int | float, potential: int | float, position: Position | None = None, age: int | float = 16, clubRating: int | float | None = None, squad: str = ''):
         # TODO Add the docstring here!
         self.__class__.instances.append(self)
         self.age = age
@@ -1147,7 +1164,7 @@ class Player(ColorText):
         self.ucFullName = f'{choice(self.nation.firstNames)} {self.ucShirtName}'
         self.fullName = self.colorText(self.ucFullName)
         self.shirtName = self.colorText(self.ucShirtName)
-        self.attributes = [attrib + self.rating + randint(-2, 2) for attrib in choice(frames[self.rating][choice(Position.instances).ucShortName])]
+        self.attributes = [min(99, attrib + self.rating + randint(-2, 2)) for attrib in choice(frames[self.rating][position.ucShortName])]
         self.foot = 'right' if random() < .8 else 'left'
         self.traits = []
         categories = [(self.phy + self.pac) / 2, self.sho, (self.pas + self.dri) / 2, self.dfn]
@@ -1219,7 +1236,7 @@ class Player(ColorText):
     def getPositionScore(self, position) -> float | int:
         '''Returns the overall of the player in the given position.'''
         score = self.pac * position.weightings[0] + self.sho * position.weightings[1] + self.pas * position.weightings[2] + self.dri * position.weightings[3] + self.dfn * position.weightings[4] + self.phy * position.weightings[5] + (99 if self.foot == 'left' or self.hasTrait('Weak Foot') else 1) * position.weightings[6] + (99 if self.foot == 'right' or self.hasTrait('Weak Foot') else 1) * position.weightings[7] + position.modifier
-        return score
+        return min(99, score)
 
     def hasTrait(self, targetTrait) -> bool:
         '''
@@ -1232,7 +1249,7 @@ class Player(ColorText):
         '''Shows the profile of the player.'''
         # input('\n' + '\n'.join([str(i) + '. ' + pos.shortName + ' ' + str(self.getPositionScore(pos)) for i, pos in enumerate(self.positions, 1)]) + '\n')
         clear()
-        print(f'''<bold>{alignText(self.fullName + f"{SINGLE_QUOTE}s profile:", 21 + max(len(uncolorText(self.formattedSecondaryPositions)), len(self.club.ucName) + len(self.squad) if self.club else 4), 'center')}</bold>
+        print(f'''<bold>{alignText(self.fullName + f"{SINGLE_QUOTE}s profile:", terminalWidth(), 'center', LINE)}</bold>
 
 <bold>Age:</bold>                <uyellow>{self.age}</uyellow>.\
 {f'\n<uorange>Rating:             {self.rating}</uorange>.' if DEV_MODE else ''}\
@@ -1247,7 +1264,7 @@ class Player(ColorText):
         Table(list(zip(Attributes + [PreferredFoot], self.attributes + [self.foot])), title = f'<uyellow>{type(self).__name__} attributes:</uyellow>').print()
         print(f'\n<underline>The traits of the {type(self).__name__.lower()}:</underline>')
         for trait in self.traits:
-            print(f'{trait.name}{" " * (max([len(trait.ucName) for trait in self.traits]) - len(trait.ucName))} {trait.colorText("—")} {trait.description}')
+            print(f'{trait.name}{" " * (max([len(trait.ucName) for trait in self.traits]) - len(trait.ucName))} {trait.colorText(LINE)} {trait.description}')
         input('\n<uyellow>Press Enter to continue.</uyellow> ')
         clear()
     
@@ -1445,6 +1462,7 @@ class Club(Find):
         `.nickname`: The nickname of the club.
         `.shortName`: A unique 3 letter code that can be used to identify the club.
         `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
+        `.players`: A list of all players currently at the club.
         `.instances`: A list of all Club instances.
     '''
     instances = []
@@ -1475,6 +1493,17 @@ class Club(Find):
         self._searchOptions = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
         self.__class__.instances.append(self)
     
+    def viewProfile(self) -> None:
+        '''Shows the profile of the club.'''
+        clear()
+        print(f'''{alignText(f"<bold>{self.fullName}'s profile:</bold>", terminalWidth(), 'center', LINE)}
+<bold>Recognised name:</bold> {self.name}.
+<bold>Nickname:</bold>        {self.nickname}.
+<bold>Colors:</bold>          {self.colorText('   ', True)}{self.color2Text('   ', True)}.
+<bold>League:</bold>          {self.league.name}.''')
+        Table([[i, p.position.shortName, p.nation.name, p.fullName, p.pac, p.sho, p.pas, p.dri, p.dfn, p.phy, p.age, p.rating, p.potential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating * 100 + x.potential, reverse=True), 1)], ['№', 'Nation', 'Pos', 'Full name', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], f"<bold>{self.fullName}'s senior squad:</bold>", '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
+        clear()
+
     def colorText(self, text, bg = False) -> str:
         '''
         Colors the `text` with the first color of the club.\n
@@ -1490,9 +1519,7 @@ class Club(Find):
         return f'<{"bg" if bg else ""}{self.colors[1]}>{text}</{"bg" if bg else ""}{self.colors[1]}>'
     
     def colorFullText(self, text) -> str:
-        '''
-        Colors the `text` with the first color of the club and colors the background with the second color of the club.
-        '''
+        '''Colors the `text` with the first color of the club and colors the background with the second color of the club.'''
         return self.color2Text(self.colorText(text), True)
     
 class League(Find):
@@ -1587,7 +1614,9 @@ nationNames += [nation.ucShortName for nation in Nation.instances]
 
 ### Testing
 
-Table([[i, p.fullName, p.nation.name, p.club.name, p.position.shortName, p.pac, p.sho, p.pas, p.dri, p.dfn, p.phy, p.foot, p.age, p.rating, p.potential] for i, p in enumerate(sorted(Player.instances, key=lambda x: x.rating * 100 + x.potential * 10000, reverse=True)[:1000], 1)], ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], 'Top 1000 players in the database.', '\nShowcase of the features of this huge update. Will not be in the actual game.\nThe players are randomly generated every playthrough for a "unique experience".\nOkay, okay, I\'m not advertising, so gonna be honest: it would be an absolute pain to add every player to the database.\nI also need to secure rights to use their data so... guess I better just create an alternate reality.\nAnd, well, the players are sorted by their rating.\n<uyellow>Press Enter to go to the main menu:</uyellow> ').input()
+# for club in sorted(Club.instances, key=lambda x: x.rating, reverse=True):
+#     club.viewProfile()
+Table([[i, p.fullName, p.nation.name, p.club.name, p.position.shortName, p.pac, p.sho, p.pas, p.dri, p.dfn, p.phy, p.foot, p.age, p.rating, p.potential] for i, p in enumerate(sorted(Player.instances, key=lambda x: x.rating * 100 + x.potential, reverse=True)[:1000], 1)], ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], 'Top 1000 players in the database.', '\nShowcase of the features of this huge update. Will not be in the actual game.\nThe players are randomly generated every playthrough for a "unique experience".\nOkay, okay, I\'m not advertising, so gonna be honest: it would be an absolute pain to add every player to the database.\nI also need to secure rights to use their data so... guess I better just create an alternate reality.\nAnd, well, the players are sorted by their rating.\n<uyellow>Press Enter to go to the main menu:</uyellow> ').input()
 
 ### Game loop
 
