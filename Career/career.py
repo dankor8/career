@@ -1,5 +1,5 @@
 ### TODO
-### player generation
+### main cycle! finally.
 
 ### Imports
 
