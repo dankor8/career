@@ -1,0 +1,20 @@
+hero:
+  fullName: gg
+  shirtName: gg
+  nation: England
+  pac: 80
+  sho: 70
+  pas: 60
+  dri: 50
+  dfn: 20
+  phy: 20
+  foot: left
+  traits:
+  - 1
+  - 2
+  - 3
+  club: null
+  age: 16
+  squad: ' U18'
+time: 1763234624.226287
+hash: 2a6b4d6a51c80a82300dce9f12b534b89994e0decaa698e04305ce71
