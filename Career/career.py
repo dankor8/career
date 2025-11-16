@@ -1,5 +1,6 @@
 ### TODO
 ### main cycle! finally.
+### fix the position mess
 
 ### Imports
 
@@ -68,16 +69,16 @@ DEV_MODE = True
 
 ### Decorators
 
-def measure(func):
+def timer(func):
     '''
-    Prints how much time it took for a function to return the result.
+    Prints how much time it took for a function to finish.
     '''
-    @measure
+    @timer
     def wrapper(*args, **kwargs):
         before = time()
         result = func(*args, **kwargs)
         delta = time() - before
-        input(f'@measure:   {func.__name__}() returned the result in {delta}s.')
+        input(f'@timer:   {func.__name__}() returned the result in {delta}s.')
         return result
     return wrapper
 
@@ -196,7 +197,7 @@ def saveData(filePath: str, data, allowExceptions: bool = False) -> bool:
             raise ValueError(f'Failed to save data to {filePath}:\n{e}\n')
         return False
     
-def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool = False) -> bool:
+def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool = False):
     '''
     Loads data in YAML from `filePath`.\n
     Returns the data if loading was successful or False if there was an error.\n
@@ -227,7 +228,7 @@ def yamlToHash(data: bytes) -> str:
     Hashes `data`.
     `data` must be in YAML.
     '''
-    return hash(data + b'well... you weren\'t supposed to find this.').hexdigest()
+    return hash(data + b' - - - very, very secret key - - - ').hexdigest()
 
 def dataToHash(data) -> str:
     '''Hashes `data`.'''
@@ -323,18 +324,22 @@ def createLeagues(progress: bool = False, bar = None, task = None, value: int | 
             club = leagueClubs[-1]
             foreignPercent = 1 - (club.rating - 40) ** 1.5 / 550 - max(0, 70 - club.rating) / 150
             club.players = []
-            playerCount = randint(26, 41)
+            playerCount = randint(26, 39)
             positionProbs = {pos: 1 for pos in Position.instances}
             for i in range(playerCount):
                 i *= 40 / (playerCount - 1)
                 pos = choices(list(positionProbs.keys()), list(positionProbs.values()))[0]
                 positionProbs[pos] /= 2
+                rating = club.rating - 1.2 * i ** .5 - max(0, i - 10) ** 2 / 60 + 6 * random() + 3
+                age = max(15, round(normalvariate(29 - (i + 1) ** 3 / 6400, 3.5 + i / 20)))
+                potential = rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 4 - 1.5
+                nation = leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, [(len(Nation.instances) - j + 100) ** 8 for j in range(101, len(Nation.instances) + 101)])[0]
                 club.players.append(Player(
-                    nation=leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, [(len(Nation.instances) - j + 100) ** 8 for j in range(101, len(Nation.instances) + 101)])[0],
-                    rating=round(club.rating - i ** .5 - i / 2.7 + 3.9),
-                    potential=round(club.rating - i ** .5),
+                    nation=nation,
+                    rating=rating,
+                    potential=potential,
                     position=pos,
-                    age=max(15, round(normalvariate(29 - (i + 1) ** 3 / 6400, 3.5 + i / 20))),
+                    age=age,
                     clubRating=club.rating,
                 ))
                 club.players[-1].club = club
@@ -477,6 +482,8 @@ def loadSetup():
                 input(f'<ured>This setup was modified.\nPress Enter to continue:</ured> ')
                 continue
             hero = Hero(decodedHeroPrep['hero'])
+            if hero.club:
+                hero.club.players.append(hero)
             print('<dgreen>Your setup was successfully loaded!</dgreen>')
             sleep(1)
             break
@@ -650,10 +657,6 @@ def OPTAtoRating(optaPowerRanking) -> float:
     `inGameRating` = `optaPowerRanking` * 3 / 5 + 27
     '''
     return round(float(optaPowerRanking) * 3 / 5 + 27, 1)
-
-def floor(num: float) -> int:
-    '''Rounds `num` down.'''
-    return int(num // 1)
 
 def removeExtension(file: str, extension: str = FILE_EXTENSION) -> str:
     '''Removes the given extension from the given file path.'''
@@ -1170,22 +1173,26 @@ class Player(ColorText):
         self.age = age
         if isinstance(self, Hero):
             self.squad = ' U18'
-            self.potential = round(80 + 15 * random())
+            self.potential = 80 + 15 * random()
             return self
         self.nation = nation
-        self.attributes = [min(99, attrib + rating + randint(-2, 2)) for attrib in choice(frames[rating][position.ucShortName])]
+        self.attributes = [min(99, attrib + rating + sum([random() - .5 for _ in range(6)])) for attrib in choice(frames[round(rating)][position.ucShortName])]
         self.foot = 'right' if random() < .8 else 'left'
         self.traits = []
         categories = [(self.phy + self.pac) / 2, self.sho, (self.pas + self.dri) / 2, self.dfn]
         weightings = [cat ** 15 for cat in categories]
         wsum = sum(weightings)
-        weightings = [w / wsum / (1 + self.position.setPieceKoe) for w in weightings] + [self.position.setPieceKoe]
+        weightings = [w / wsum / (1 + position.setPieceKoe) for w in weightings] + [position.setPieceKoe]
         traitNum = max(1, round(normalvariate(2.5, 1)))
         while len(self.traits) < traitNum:
             toAppend = Trait.instances[choices([randint(i, i + 4) for i in range(0, 21, 5)], weights=weightings)[0]]
             if not toAppend in self.traits:
                 self.traits.append(toAppend)
-        self.potential = min(99, round(max(self.rating, round(self.rating + normalvariate(0, max(0, 8 - max(self.age, 17) ** 2 / 80 + (87 - clubRating) ** .6)) + (potential - self.rating) * (.5 - abs(self.age - 27) * (self.age - 27) / 100)))))
+        self.suit = {p: -max(0, sum([3 * random() - .5 for _ in range(int(self.getPositionScore(position) - self.getPositionScore(p) + 1.5 * random()))])) for p in Position.instances}
+        mx = max(self.suit.values())
+        for p in Position.instances:
+            self.suit[p] -= mx
+        self.potential = min(99, max(self.rating, potential))
         self.squad = squad
         self.ucShirtName = choice(self.nation.lastNames)
         self.ucFullName = f'{choice(self.nation.firstNames)} {self.ucShirtName}'
@@ -1199,21 +1206,30 @@ class Player(ColorText):
     @property
     def secondaryPositions(self) -> list[Position]:
         toReturn = []
-        primaryPosScore = self.getPositionScore(self.position)
         positions = self.positions
+        positions.remove(self.position)
         for position in positions[1:]:
-            if primaryPosScore - self.getPositionScore(position) > 1.5:
-                break
-            toReturn.append(position)
+            if self.suit[position] >= -.5:
+                toReturn.append(position)
         return toReturn
     
     @property
-    def formattedSecondaryPositions(self) -> str:
+    def fullSecondaryPositions(self) -> str:
         return ', '.join([pos.name for pos in self.secondaryPositions]) if self.secondaryPositions else 'none'
     
     @property
+    def shortSecondaryPositions(self) -> str:
+        sp = self.secondaryPositions
+        if len(sp) > 3:
+            return ', '.join([pos.shortName for pos in sp[:2]]) + ', ...'
+        elif sp:
+            return ', '.join([pos.shortName for pos in sp])
+        return 'none'
+        
+    
+    @property
     def positions(self) -> list[Position]:
-        return sorted(Position.instances, key = self.getPositionScore, reverse = True)
+        return sorted(Position.instances, key = lambda x: self.suit[x], reverse = True)
 
     @property
     def ucDescription(self) -> str:
@@ -1241,9 +1257,37 @@ class Player(ColorText):
         return self.position.colorText(self.ucDescription)
     
     @property
+    def ipac(self) -> int:
+        return round(self.pac)
+    
+    @property
+    def isho(self) -> int:
+        return round(self.sho)
+    
+    @property
+    def ipas(self) -> int:
+        return round(self.pas)
+    
+    @property
+    def idri(self) -> int:
+        return round(self.dri)
+    
+    @property
+    def idfn(self) -> int:
+        return round(self.dfn)
+    
+    @property
+    def iphy(self) -> int:
+        return round(self.phy)
+
+    @property
     def attributes(self) -> list[int | float]:
         return [self.pac, self.sho, self.pas, self.dri, self.dfn, self.phy]
     
+    @property
+    def iattributes(self) -> list[int]:
+        return [self.ipac, self.isho, self.ipas, self.idri, self.idfn, self.iphy]
+
     @attributes.setter
     def attributes(self, frame):
         self.pac, self.sho, self.pas, self.dri, self.dfn, self.phy = frame
@@ -1255,13 +1299,20 @@ class Player(ColorText):
     @property
     def irating(self) -> int:
         return round(self.getPositionScore(self.position))
+    
+    @property
+    def ipotential(self) -> int:
+        return round(self.potential)
 
-    def getPositionScore(self, position) -> float | int:
+    def getPositionScore(self, position: Position) -> float | int:
         '''Returns the overall of the player in the given position.'''
         score = self.pac * position.weightings[0] + self.sho * position.weightings[1] + self.pas * position.weightings[2] + self.dri * position.weightings[3] + self.dfn * position.weightings[4] + self.phy * position.weightings[5] + (99 if self.foot == 'left' or self.hasTrait('Weak Foot') else 1) * position.weightings[6] + (99 if self.foot == 'right' or self.hasTrait('Weak Foot') else 1) * position.weightings[7] + position.modifier
-        return min(99, score)
+        try:
+            return min(99, score) + self.suit[position]
+        except:
+            return min(99, score)
 
-    def hasTrait(self, targetTrait) -> bool:
+    def hasTrait(self, targetTrait: Trait) -> bool:
         '''
         Returns True if `targetTrait` is one of the traits of the player, False otherwise.
         `targetTrait` must be a Trait object or be in ._searchOptions.
@@ -1274,16 +1325,16 @@ class Player(ColorText):
         clear()
         print(f'''<bold>{alignText(self.fullName + f"{SINGLE_QUOTE}s profile:", terminalWidth(), 'center', LINE)}</bold>
 <bold>Age:</bold>                <uyellow>{self.age}</uyellow>.\
-{f'\n<uorange>Rating:             {self.irating}</uorange>.' if DEV_MODE else ''}\
-{f'\n<uorange>Potential:          {self.potential}</uorange>.' if DEV_MODE else ''}
+{f'\n<uorange>Rating:             {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}\
+{f'\n<uorange>Potential:          {round(self.potential, 2)}</uorange>.' if DEV_MODE else ''}
 <bold>Preferred position:</bold> {self.position.name}.
-<bold>Other positions:</bold>    {self.formattedSecondaryPositions}.
+<bold>Other positions:</bold>    {self.fullSecondaryPositions}.
 <bold>Fan description:</bold>    {self.description}.
 <bold>Nationality:</bold>        {self.nation.nationality}.
 <bold>Club:</bold>               {f'{self.club.name if self.club else "none (free agent)"}{self.club.colorText(self.squad) if self.club else ""}'}.
 <bold>League:</bold>             {self.club.league.name if self.club else 'none'}.
 ''')
-        Table(list(zip(Attributes + [PreferredFoot], self.attributes + [self.foot])), title = f'<uyellow>{type(self).__name__} attributes:</uyellow>').print()
+        Table(list(zip(Attributes + [PreferredFoot], self.iattributes + [self.foot])), title = f'<uyellow>{type(self).__name__} attributes:</uyellow>').print()
         print(f'\n<underline>The traits of the {type(self).__name__.lower()}:</underline>')
         for trait in self.traits:
             print(f'{trait.name}{" " * (max([len(trait.ucName) for trait in self.traits]) - len(trait.ucName))} {trait.colorText(LINE)} {trait.description}')
@@ -1292,9 +1343,7 @@ class Player(ColorText):
         clear()
     
     def colorText(self, text: str) -> str:
-        '''Colors `text` in the color of the nation of the hero and underlines it.'''
-        if isinstance(self, Hero):
-            return '<underline>' + self.nation.colorText(text) + '</underline>'
+        '''Colors `text` in the color of the nation of the player and underlines it.'''
         return self.nation.colorText(text)
 
     def getDifferenceFromMax(self, attribute: int) -> int:
@@ -1451,6 +1500,8 @@ class Hero (Player):
         
         try:
             hero = Hero(data)
+            if hero.club:
+                hero.club.players.append(hero)
             return hero
         except Exception as e:
             print(f'<ured>An error occured while trying to create your hero:</ured>\n')
@@ -1472,6 +1523,14 @@ class Hero (Player):
         data.pop('ucFullName')
         data.pop('ucShirtName')
         return data
+    
+    def colorText(self, text: str) -> str:
+        '''Colors `text` in the color of the nation of the hero and underlines it.'''
+        return '<underline>' + self.nation.colorText(text) + '</underline>'
+
+    @property
+    def ipotential(self) -> str:
+        return '??'
 
 class Club(Find):
     '''
@@ -1523,8 +1582,9 @@ class Club(Find):
 <bold>Recognised name:</bold> {self.name}.
 <bold>Nickname:</bold>        {self.nickname}.
 <bold>Colors:</bold>          {self.colorText('   ', True)}{self.color2Text('   ', True)}.
-<bold>League:</bold>          {self.league.name}.''')
-        t = Table([[i, p.position.shortName, p.nation.name, p.fullName, p.pac, p.sho, p.pas, p.dri, p.dfn, p.phy, p.age, p.irating, p.potential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True), 1)], ['№', 'Nation', 'Pos', 'Full name', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], f"<bold>{self.fullName}'s senior squad:</bold>", caption if end else None)
+<bold>League:</bold>          {self.league.name}.\
+{f'\n<uorange>Rating:          {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}''')
+        t = Table([[i, p.position.shortName, p.nation.name, p.fullName, *p.iattributes, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True), 1)], ['№', 'Pos', 'Nation', 'Full name', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], f"<bold>{self.fullName}'s senior squad:</bold>", caption if end else None)
         if end:
             t.input()
         else:
@@ -1631,7 +1691,7 @@ Attributes = [Pace, Shooting, Passing, Dribbling, Defending, Physicality]
 
 just_fix_windows_console()
 chdir(dirname(abspath(__file__)))
-settings, mainStyleDict = parseDatabase(list(files.values()) + list(dirs.values()), [Settings, createStyle, createNations, createPositions, createTraits, createLeagues, ], [files['settings'], files['style'], ], [2, 2, 10, 2, 2, 5, ])
+settings, mainStyleDict = parseDatabase(list(files.values()) + list(dirs.values()), [Settings, createStyle, createNations, createPositions, createTraits, createLeagues], [files['settings'], files['style'], ], [2, 2, 10, 2, 2, 5, ])
 mainStyle = Style.from_dict(mainStyleDict)
 
 nationNames = [str(nation.fifaRanking) for nation in Nation.instances]
@@ -1641,9 +1701,14 @@ nationNames += [nation.ucShortName for nation in Nation.instances]
 
 ### Testing
 
-# for club in sorted(Club.instances, key=lambda x: -x.rating, reverse=True):
+# for club in sorted(Club.instances, key=lambda x: random() * 10, reverse=True):
 #     club.viewProfile()
-# Table([[i, p.fullName, p.nation.name, p.club.name, p.position.shortName, p.pac, p.sho, p.pas, p.dri, p.dfn, p.phy, p.foot, p.age, p.rating, p.potential] for i, p in enumerate(sorted(Player.instances, key=lambda x: x.rating * 100 + x.potential, reverse=True)[:1000], 1)], ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], 'Top 1000 players in the database.', '\nShowcase of the features of this huge update. Will not be in the actual game.\nThe players are randomly generated every playthrough for a "unique experience".\nOkay, okay, I\'m not advertising, so gonna be honest: it would be an absolute pain to add every player to the database.\nI also need to secure rights to use their data so... guess I better just create an alternate reality.\nAnd, well, the players are sorted by their rating.\n<uyellow>Press Enter to go to the main menu:</uyellow> ').input()
+Table([[i, p.fullName, p.nation.name, p.club.shortName, p.position.shortName, p.shortSecondaryPositions, *p.iattributes, p.foot, p.age, p.irating, p.ipotential, p.ipotential - p.irating] for i, p in enumerate(sorted(Player.instances, key=lambda x: x.rating, reverse=True)[:1000], 1)], ['№', 'Full name', 'Nation', 'Club', 'Pos', '2poses', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen'), 'de'], 'Top 1000 players in the database.', '\nShowcase of the features of this huge update. Will not be in the actual game.\nThe players are randomly generated every playthrough for a "unique experience".\nOkay, okay, I\'m not advertising, so gonna be honest: it would be an absolute pain to add every player to the database.\nI also need to secure rights to use their data so... guess I better just create an alternate reality.\nAnd, well, the players are sorted by their rating.\n<uyellow>Press Enter to go to the main menu:</uyellow> ').input()
+# Table([[i, p.fullName, p.nation.name, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential, p.ipotential - p.irating] for i, p in enumerate(sorted(Player.instances, key=lambda x: x.potential, reverse=True)[:1000], 1)], ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen'), 'de'], 'Top 1000 players in the database.', '\nShowcase of the features of this huge update. Will not be in the actual game.\nThe players are randomly generated every playthrough for a "unique experience".\nOkay, okay, I\'m not advertising, so gonna be honest: it would be an absolute pain to add every player to the database.\nI also need to secure rights to use their data so... guess I better just create an alternate reality.\nAnd, well, the players are sorted by their rating.\n<uyellow>Press Enter to go to the main menu:</uyellow> ').input()
+# cnt = {p.name: 0 for p in Position.instances}
+# for pl in Player.instances:
+#     cnt[pl.position.name] += 1
+# input(cnt)
 
 ### Game loop
 
@@ -1696,5 +1761,6 @@ while True:
     except QuitError:
         continue
     hero.viewProfile()
+    hero.club.viewProfile()
 
     input('<rorange>There will be a career here soon... For now, though, press Enter:</rorange> ')

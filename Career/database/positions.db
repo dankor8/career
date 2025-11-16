@@ -11,7 +11,7 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.1
-  modifier: 0.7
+  modifier: 0.0
 - name: left winger
   shortName: LW
   color: rorange
@@ -25,7 +25,7 @@
     leftFoot: 0.01
     rightFoot: 0.0
   setPieceKoe: 0.12
-  modifier: 0.0
+  modifier: -0.5
 - name: right winger
   shortName: RW
   color: rorange
@@ -39,7 +39,7 @@
     leftFoot: 0.0
     rightFoot: 0.01
   setPieceKoe: 0.06
-  modifier: -0.2
+  modifier: -0.5
 - name: attacking midfielder
   shortName: CAM
   color: dyellow
@@ -53,7 +53,7 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.25
-  modifier: 1.0
+  modifier: 1.3
 - name: center midfielder
   shortName: CM
   color: uyellow
@@ -67,7 +67,7 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.3
-  modifier: 1.5
+  modifier: 2.8
 - name: defensive midfielder
   shortName: CDM
   color: gyellow
@@ -81,7 +81,7 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.2
-  modifier: 1.0
+  modifier: 1.8
 - name: left back
   shortName: LB
   color: ygreen
@@ -95,7 +95,7 @@
     leftFoot: 0.01
     rightFoot: 0.0
   setPieceKoe: 0.1
-  modifier: 0.9
+  modifier: 2.0
 - name: right back
   shortName: RB
   color: ygreen
@@ -109,7 +109,7 @@
     leftFoot: 0.0
     rightFoot: 0.01
   setPieceKoe: 0.05
-  modifier: 0.7
+  modifier: 2.0
 - name: center back
   shortName: CB
   color: dgreen
@@ -123,4 +123,4 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.005
-  modifier: 0.0
+  modifier: 3.0
