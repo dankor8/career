@@ -1,4 +1,5 @@
 ### TODO
+### settings.db comment
 ### main cycle?
 
 ### Imports
@@ -409,12 +410,17 @@ def createTraits(progress: bool = False, bar = None, task = None, value: int | f
     '''
     Trait.instances = []
     traits = loadData(files['traits'])
+    wfExists = False
     if progress:
         bar.update(task, advance=value / 2)
     for trait in traits:
+        if trait['name'] == 'Weak Foot':
+            wfExists = True
         Trait(trait['name'], trait['description'], trait['color'], trait['category'])
         if progress:
             bar.update(task, advance=value / len(traits))
+    if not wfExists:
+        raise Exception('A trait with the name "Weak Foot" must exist.')
 
 def createStyle(progress: bool = False, bar = None, task = None, value: int | float = 0) -> dict[str: str]:
     '''
@@ -1375,7 +1381,7 @@ class Player(ColorText):
             suit[p] -= mx
         return suit
 
-    def getPositionScore(self, position: Position) -> float | int:
+    def getPositionScore(self, position: Position) -> float:
         '''Returns the overall of the player in the given position.'''
         score = self.pac * position.weightings[0] + self.sho * position.weightings[1] + self.pas * position.weightings[2] + self.dri * position.weightings[3] + self.dfn * position.weightings[4] + self.phy * position.weightings[5] + (99 if self.foot == 'left' or self.hasTrait('Weak Foot') else 1) * position.weightings[6] + (99 if self.foot == 'right' or self.hasTrait('Weak Foot') else 1) * position.weightings[7] + position.modifier
         try:
@@ -1621,7 +1627,7 @@ class Club(Find):
     - `.instances`: A list of all Club instances.
     '''
     instances = []
-    def __init__(self, ovr: float | int, fullName: str, names: list[str], nickname: str, shortName: str, colors: list[str]):
+    def __init__(self, ovr: float, fullName: str, names: list[str], nickname: str, shortName: str, colors: list[str]):
         '''
         Arguments:
         - `ovr`: The in-game overall rating of the club.
@@ -1785,16 +1791,16 @@ while True:
         nationNames += nation.ucNames
     nationNames += [nation.ucShortName for nation in Nation.instances]
 
-    # viewPlayerRankings('rating')
-    # viewPlayerRankings('potential')
-    # for club in sorted(Club.instances, key=lambda x: x.rating + random() * 10, reverse=True):
-    #     club.viewProfile()
-    # cnt = {p.name: 0 for p in Position.instances}
-    # for pl in Player.instances:
-    #     cnt[pl.position.name] += 1
-    # for k, v in zip(cnt.keys(), cnt.values()):
-    #     cnt[k] = [v, f'{round(v / len(Player.instances) * 100, 2)}%', v / len(Player.instances) * 11]
-    # input(cnt)
+    viewPlayerRankings('rating')
+    viewPlayerRankings('potential')
+    for club in sorted(Club.instances, key=lambda x: x.rating + random() * 10, reverse=True):
+        club.viewProfile()
+    cnt = {p.name: 0 for p in Position.instances}
+    for pl in Player.instances:
+        cnt[pl.position.name] += 1
+    for k, v in zip(cnt.keys(), cnt.values()):
+        cnt[k] = [v, f'{round(v / len(Player.instances) * 100, 2)}%', v / len(Player.instances) * 11]
+    input(cnt)
 
     while True:
         setupFiles = getFiles(dirs['setups'])

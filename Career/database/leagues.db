@@ -1,32 +1,31 @@
-# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-# Contains data about all leagues and clubs in YAML.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Contains data about all leagues and clubs in YAML format.
 # Find a guide explaining how to use YAML if you're interested in modding.
 # It's easy to understand even if you had no experience with coding or modding before.
-# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-#                                                  League structure
-# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-# name   - the league's official name (sponsors included, examples: LaLiga EA Sports, Mir Russian Premier League);
-# nation - the nation of the league
-#          (short name and FIFA ranking are acceptable too as long as they match the ones in nations.db);
-# clubs  - a list of all clubs in the league (following the Club object structure).
-# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-#                                                   Club structure
-# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-# rating    - the club's rating
-#             (write it normally if this should be the in-game rating as in 87.0 or 
-#             append a ! at the end as in 100.0! to indicate that this is the OPTA power ranking,
-#             it will automatically be converted to the in-game rating);
-# shortName - the club's short name (must be unique and 3 letters long);
-# fullName  - the club's official name;
-# names     - all generic names the club is recognised by except its nicknames
-#             (if a generic name contains special characters like ü and ú, you need to add one without them.
-#             Each name must be < 25 characters long. Search "koln" in this file if you want an example);
-# nickname  - a generic club name that has no relation to its official name and is accepted by its supporters
-#             (ex. The Gunners for Arsenal, Los Blancos for Real Madrid; must be < 25 characters long);
-# colors    - two of the club's main colors
-#             (must be taken from customisation/style.db; examples: dred and uwhite (not dark red and white!),
-#             rorange and gcyan (not reddish orange and greenish cyan!)).
-# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                   League structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# name      - The league's official name, including sponsors.
+#             Examples: "LaLiga EA Sports", "Mir Russian Premier League".
+# nation    - The nation of the league.
+#             Must match the nation name in database/nations.db (short names and FIFA rankings are also acceptable).
+# clubs     - A list of all clubs in the league, following the Club object structure below.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                    Club structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# rating    - The club's rating value.
+#             Format: Write normally (e.g., 87.0) for in-game rating, or append "!" (e.g., 100.0!) 
+#             to indicate OPTA power ranking (will be automatically converted to in-game rating).
+# shortName - The club's short name. Must be unique, capitalized and exactly 3 letters long.
+# fullName  - The club's official full name.
+# names     - All generic names the club is recognized by, excluding nicknames.
+#             Each name must be at most 25 characters long.
+#             If a name contains special characters (e.g., ü, ú), a version without them should be included.
+#             Example: Search "koln" in this file for a reference.
+# nickname  - A generic club name, often unrelated to its official name and accepted by supporters.
+#             Must be at most 25 characters long.
+# colors    - Two of the club's main colors. Must use color names from customisation/style.db.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 - name: Premier League
   nation: England
   clubs:

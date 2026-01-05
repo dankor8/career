@@ -1,3 +1,20 @@
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Contains data about all player positions in YAML format.
+# Find a guide explaining how to use YAML if you're interested in modding.
+# It's easy to understand even if you had no experience with coding or modding before.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                  Position structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# name        - The full name of the position.
+# shortName   - The position's short name. Must be capitalized and should consist of 2 or 3 letters.
+# color       - The position's color (used for user display). Must use color names from customisation/style.db.
+# weightings  - A dictionary containing weightings for each attribute used to calculate player overall rating.
+#               When calculating the rating of a player for a given position attributes are multiplied by their
+#               corresponding weightings and added together. Then the modifier is added to get the final result.
+# setPieceKoe - The coefficient used to determine the probability of a player in this position
+#               having a set piece related trait.
+# modifier    - The modifier used in the calculation of a player's overall rating for a given position.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 - name: striker
   shortName: ST
   color: ured

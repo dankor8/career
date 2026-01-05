@@ -1,3 +1,16 @@
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Contains data about all player names in YAML format.
+# Find a guide explaining how to use YAML if you're interested in modding.
+# It's easy to understand even if you had no experience with coding or modding before.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                   File structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# country    - The name of the nation.
+# firstNames - A list of first names used for players from this nation.
+#              Each name must be between 2 and 25 characters long.
+# lastNames  - A list of last names used for players from this nation.
+#              Each name must be between 2 and 25 characters long.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 - country: Argentina
   firstNames:
   - Lautaro

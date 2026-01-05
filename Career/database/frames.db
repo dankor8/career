@@ -1,3 +1,18 @@
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Contains data about all attribute frames for newly generated players in YAML format.
+# Find a guide explaining how to use YAML if you're interested in modding.
+# It's easy to understand even if you had no experience with coding or modding before.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                  Frame structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# 1st layer (rating)     - The predicted rating of the generated player.
+# 2nd layer (position)   - The short name of the position of the player (must match the ones in database/positions.db).
+# 3rd layer (attributes) - A list of attribute frames for the position at this rating.
+#                          Each frame is a list of 6 integers representing attribute modifiers:
+#                          [pace, shooting, passing, dribbling, defending, physicality].
+#                          These modifiers are added to the player's rating along with a random value
+#                          to determine the final attribute values.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 55: &55
   ST:
   - - 9

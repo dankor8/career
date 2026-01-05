@@ -1,7 +1,25 @@
-# FIFA rankings are in the game as of July 6, 2025.
-# Eritrea were put at 195th as this was their last ranking.
-# Russia are at 35th as they are ranked 35th at the FIFA website.
-
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Contains data about all nations in YAML format.
+# Find a guide explaining how to use YAML if you're interested in modding.
+# It's easy to understand even if you had no experience with coding or modding before.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                   Nation structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# shortName   - The nation's short name. Must be unique, capitalized and exactly 3 letters long.
+# names       - All generic names the nation is recognized by.
+#               Each name must be at most 25 characters long.
+# nationality - The word you would call a person from that nation.
+# clubs       - A list of all clubs in the league, following the Club object structure below.
+# color       - The nation's main color. Must use color names from customisation/style.db.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                      Comments
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# I.  Nations are ordered according to their FIFA ranking.
+#     Do not change the order of the nations unless you want to change the FIFA ranking too.
+# II. FIFA rankings are in the game as of July 6, 2025.
+#     Eritrea is 195th as this was their last ranking.
+#     Russia is 35th as they are ranked 35th at the FIFA website.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 - shortName: ARG
   names:
   - Argentina
