@@ -1,5 +1,4 @@
 ### TODO
-### settings.db comment
 ### main cycle?
 
 ### Imports

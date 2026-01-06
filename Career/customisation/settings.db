@@ -1,3 +1,20 @@
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Contains data about all game settings in YAML format.
+# Find a guide explaining how to use YAML if you're interested in modding.
+# It's easy to understand even if you had no experience with coding or modding before.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                   Setting structure
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# name        - The name of the setting.
+# description - A description explaining what the setting does and how it affects gameplay.
+# setTo       - The value that the setting is set to. Must be in the list of values.
+# values      - The list of values that the setting can be set to.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+#                                                        Warning
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+# Anything other than setting descriptions should not be modified as such modifications can crash the game, however,
+# the descriptions can be modified if you feel the need to do so.
+# ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 - name: View preliminary progress bars
   description: Shows progress bars when launching the application if set to Yes. Does
     not affect other progress bars.

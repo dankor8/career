@@ -8,10 +8,10 @@
 # name        - The name of the trait.
 # description - A description explaining what the trait does and how it affects gameplay.
 # color       - The trait's color. Must use color names from customisation/style.db.
-# category    - The category the trait belongs to.
+# category    - The category that the trait belongs to.
 #               Categories: "Physical", "Attacking", "Technical", "Defensive", "Set Piece".
 # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-#                                                        Comments
+#                                                        Warning
 # ——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 # Trait names and categories should not be modified as this can make the game crash, however, you are free to
 # modify their description and color.
