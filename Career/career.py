@@ -1,7 +1,12 @@
 ### TODO
+### add GK!
 ### main cycle?
 
 ### Imports
+
+from __future__ import annotations
+
+from typing import Any, Callable, ClassVar
 
 from rich.progress import Progress
 # from rich.layout import Layout
@@ -19,11 +24,11 @@ from random import random, choice, choices, randint, normalvariate
 from questionary import select as questionary, Choice
 from colorama import just_fix_windows_console
 from pathvalidate import is_valid_filename
-from yaml import safe_load, safe_dump
+from yaml import safe_load, safe_dump, YAMLError
 from traceback import format_exc
 from sys import exit as sysExit
 from datetime import datetime
-from hashlib import sha3_224 as hash
+from hashlib import sha3_224
 from time import sleep, time
 
 ### File variables
@@ -76,7 +81,7 @@ def timer(func):
         before = time()
         result = func(*args, **kwargs)
         delta = time() - before
-        input(f'@timer:   {func.__name__}() returned the result in {delta}s.')
+        print(f'@timer:   {func.__name__}() returned the result in {delta}s.')
         return result
     return wrapper
 
@@ -92,7 +97,7 @@ def input(*message, sep: str = ' ', default: str = "", completer = None) -> str:
     message = sep.join([str(part) for part in message])
     try:
         return prompt(HTML(message), style = mainStyle, default = default, completer = completer)
-    except Exception:
+    except (ValueError, TypeError, AttributeError):
         return origInput(message)
 
 def print(*values, sep: str = ' ', end: str = '\n') -> None:
@@ -104,7 +109,7 @@ def print(*values, sep: str = ' ', end: str = '\n') -> None:
     values = sep.join([str(part) for part in values])
     try:
         print_formatted_text(HTML(values), end = end, style = mainStyle)
-    except Exception as e:
+    except (ValueError, TypeError, AttributeError):
         origPrint(values)
 
 def richFormat(text: str) -> str:
@@ -180,7 +185,7 @@ def clear() -> None:
 
 ### Encoding/decoding functions
 
-def saveData(filePath: str, data, allowExceptions: bool = False) -> bool:
+def saveData(filePath: str, data: Any, allowExceptions: bool = False) -> bool:
     '''
     Saves `data` to `filePath` in YAML.\n
     Returns True if saving was successful or False if there was an error.\n
@@ -190,12 +195,12 @@ def saveData(filePath: str, data, allowExceptions: bool = False) -> bool:
         with open(filePath, 'wb') as f:
             f.write(dataToYAML(data))
         return True
-    except Exception as e:
+    except (OSError, TypeError, YAMLError) as e:
         if allowExceptions:
             raise ValueError(f'Failed to save data to {filePath}:\n{e}\n')
         return False
     
-def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool = False):
+def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool = False) -> Any | bool:
     '''
     Loads data in YAML from `filePath`.\n
     Returns the data if loading was successful or False if there was an error.\n
@@ -212,12 +217,12 @@ def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool =
             if modifyComments and commentLength:
                 comments[filePath.split('/')[1]] = '\n'.join(splitContents[:commentLength])
             return safe_load(contents)
-    except Exception as e:
+    except (FileNotFoundError, OSError, YAMLError) as e:
         if allowExceptions:
-            raise ValueError(f'Failed to load data from {filePath}:\n{e}\n')
+            raise ValueError(f'File not found: {filePath}' if isinstance(e, FileNotFoundError) else f'Failed to load data from {filePath}:\n{e}\n')
         return False
 
-def dataToYAML(data) -> bytes:
+def dataToYAML(data: Any) -> bytes:
     '''Transforms `data` to YAML.'''
     return safe_dump(data, encoding = 'utf-8', allow_unicode = True, sort_keys = False)
 
@@ -226,9 +231,9 @@ def yamlToHash(data: bytes) -> str:
     Hashes `data`.
     `data` must be in YAML.
     '''
-    return hash(data + b' - - - very, very secret key - - - ').hexdigest()
+    return sha3_224(data + b' - - - very, very secret key - - - ').hexdigest()
 
-def dataToHash(data) -> str:
+def dataToHash(data: Any) -> str:
     '''Hashes `data`.'''
     return yamlToHash(dataToYAML(data))
 
@@ -246,7 +251,7 @@ def getFiles(directory: str, extensions: list[str] = [FILE_EXTENSION, DATABASE_F
     '''Returns all flies from the given directory that share an extension with th given extensions.'''
     return [file for file in listdir(directory) if '.' + file.split('.')[-1] in extensions or not extensions]
 
-def parseDatabase(pathsToCheck: list[str], funcsToCheck: list[callable], outputsToReturn: list[str] = [], progressValues: list[int] = [2 for _ in range(len(files.values()))]) -> list:
+def parseDatabase(pathsToCheck: list[str], funcsToCheck: list[Callable], outputsToReturn: list[str] = [], progressValues: list[int] = [2 for _ in range(len(files.values()))]) -> list:
     '''
     Checks that all paths in `pathsToCheck` exist and calls each function in `funcsToCheck`.\n
     Returns the output of a function if the file corresponding to it (taken from the files dictionary) is in `outputsToReturn`.
@@ -264,8 +269,8 @@ def parseDatabase(pathsToCheck: list[str], funcsToCheck: list[callable], outputs
                     output = func(progressBars, bar if progressBars else None, task if progressBars else None, value if progressBars else 0)
                     if file in outputsToReturn:
                         toReturn.append(output)
-                except Exception as e:
-                    exc = e
+                except (DatabaseError, ValueError, TypeError, KeyError, IndexError, AttributeError, OSError, YAMLError) as e:
+                    exc = str(e)
                     try:
                         if DEV_MODE or settings.excTraceback:
                             exc = '\n' + format_exc()
@@ -304,7 +309,7 @@ def createLeagues(progress: bool = False, bar = None, task = None, value: int | 
     global freeAgents
     freeAgents = Club(0, 'Free agents', ['Free agents'], 'Free agents', '\u2500' * 3, ['ublack', 'uwhite'])
     freeAgents.players = []
-    Nation(['Free agents'], 'u\2500' * 3, 'free agent', 'ublack', -1, [], [])
+    Nation(['Free agents'], '\u2500' * 3, 'free agent', 'ublack', -1, [], [])
     League('Free agents', Nation.instances.pop(), [freeAgents])
     League.instances.pop()
     global frames
@@ -510,7 +515,7 @@ def loadSetup():
 
 ### Shortcut functions
 
-def menu(title: str, options: list, help: str = ' ', default = None):
+def menu(title: str, options: list[MenuOption], help: str = ' ', default: Any = None) -> Any:
     '''
     Asks a questionary and returns the chosen answer.\n
     `options` must be instances of the MenuOption class.
@@ -840,8 +845,8 @@ class Setting:
     - `.values`: A list of values that the setting can be set to.
     - `.instances`: A list of all Setting instances.
     '''
-    instances = []
-    def __init__(self, data):
+    instances: ClassVar[list[Setting]] = []
+    def __init__(self, data: dict):
         '''
         Arguments:
         - `data`: A dictionary that contains the setting's `name`, `description`, `setTo` and `values`.
@@ -1100,7 +1105,7 @@ class Nation(ColorText, Find):
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
     - `.instances`: A list of all Nation instances.
     '''
-    instances = []
+    instances: ClassVar[list[Nation]] = []
     def __init__(self, names: list[str], shortName: str, nationality: str, color: str, fifaRanking: int, firstNames: list[str], lastNames: list[str]):
         '''
         Arguments:
@@ -1141,7 +1146,7 @@ class Trait(ColorText, Find):
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
     - `.instances`: A list of all Trait instances.
     '''
-    instances = []
+    instances: ClassVar[list[Trait]] = []
     def __init__(self, name: str, description: str, color: str, category: str):
         '''
         Arguments:
@@ -1184,7 +1189,7 @@ class Position(ColorText):
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
     - `.instances`: A list of all Position instances.
     '''
-    instances = []
+    instances: ClassVar[list[Position]] = []
     def __init__(self, shortName: str, name: str, color: str, weightings: list[float], setPieceKoe: float, modifier: float):        
         '''
         Arguments:
@@ -1230,7 +1235,7 @@ class Player(ColorText):
     - `.i{attribute}`: Same as `.{attribute}` but is of type `int` instead of `float`.
     - `.instances`: A list of all Position instances.
     '''
-    instances = []
+    instances: ClassVar[list[Player]] = []
     def __init__(self, nation: Nation | None, rating: float | None, potential: float | None, position: Position | None = None, age: int | float = 16, squad: str = ''):
         '''
         Arguments:
@@ -1625,7 +1630,7 @@ class Club(Find):
     - `.players`: A list of all players currently at the club.
     - `.instances`: A list of all Club instances.
     '''
-    instances = []
+    instances: ClassVar[list[Club]] = []
     def __init__(self, ovr: float, fullName: str, names: list[str], nickname: str, shortName: str, colors: list[str]):
         '''
         Arguments:
@@ -1710,7 +1715,7 @@ class League(Find):
     - `.capacity`: How many clubs participate in the league.
     - `.rating`: Shortcut for `.getRating()`.
     '''
-    instances = []
+    instances: ClassVar[list[League]] = []
     def __init__(self, name: str, nation, clubs: list):
         '''
         Arguments:
@@ -1790,16 +1795,16 @@ while True:
         nationNames += nation.ucNames
     nationNames += [nation.ucShortName for nation in Nation.instances]
 
-    viewPlayerRankings('rating')
-    viewPlayerRankings('potential')
-    for club in sorted(Club.instances, key=lambda x: x.rating + random() * 10, reverse=True):
-        club.viewProfile()
-    cnt = {p.name: 0 for p in Position.instances}
-    for pl in Player.instances:
-        cnt[pl.position.name] += 1
-    for k, v in zip(cnt.keys(), cnt.values()):
-        cnt[k] = [v, f'{round(v / len(Player.instances) * 100, 2)}%', v / len(Player.instances) * 11]
-    input(cnt)
+    # viewPlayerRankings('rating')
+    # viewPlayerRankings('potential')
+    # for club in sorted(Club.instances, key=lambda x: x.rating + random() * 10, reverse=True):
+    #     club.viewProfile()
+    # cnt = {p.name: 0 for p in Position.instances}
+    # for pl in Player.instances:
+    #     cnt[pl.position.name] += 1
+    # for k, v in zip(cnt.keys(), cnt.values()):
+    #     cnt[k] = [v, f'{round(v / len(Player.instances) * 100, 2)}%', v / len(Player.instances) * 11]
+    # input(cnt)
 
     while True:
         setupFiles = getFiles(dirs['setups'])
