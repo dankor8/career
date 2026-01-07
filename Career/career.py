@@ -540,7 +540,7 @@ def menu(title: str, options: list[MenuOption], help: str = ' ', default: str | 
     sleep(.1)
     menuOptions: list[Choice] = [Choice(option if isinstance(option, str) else [('class:' + option.color, option.text)], value = option.returnValue, description = option.description.replace('\n', '\n               ') if option.description else option.description) for option in options]
     result = questionary(title.replace('\n', '\n '), menuOptions, instruction = help, qmark = '', style = mainStyle, default = default).ask()
-    if result == None:
+    if result is None:
         return menu(title, options, help, default)
     if result == '!None':
         return
@@ -782,14 +782,14 @@ class Find:
         '''
         Returns an instance that corresponds to the given `name` or -1 if object was not found.
         Raises an Exception instead of returning -1 if `allowExceptions` is True.\n
-        Each instance must have a `_searchOptions` attribute containing strings that the instance can be found by.
-        All strings in `_searchOptions` must be uncolored and lowercase.
+        Each instance must have a `searchOptions` attribute containing strings that the instance can be found by.
+        All strings in `searchOptions` must be uncolored and lowercase.
         '''
         newName: str = str(name).lower()
         if newName == 'free agents' or (hasattr(name, 'ucName') and name.ucName.lower() == 'free agents'):
             return freeAgents
         for obj in cls.instances:
-            if newName in obj._searchOptions or name is obj:
+            if newName in obj.searchOptions or name is obj:
                 return obj
         if allowExceptions:
             raise DatabaseError(f'Couldn\'t find a {cls.__name__.lower()} named "{name}".')
@@ -1167,7 +1167,7 @@ class Nation(ColorText, Find):
         self.lastNames: list[str] = lastNames
         self.leagues: list[League] = []
         self.clubs: list[Club] = []
-        self._searchOptions: list[str] = [str(self.fifaRanking), self.ucShortName.lower()] + [nationName.lower() for nationName in self.ucNames]
+        self.searchOptions: list[str] = [str(self.fifaRanking), self.ucShortName.lower()] + [nationName.lower() for nationName in self.ucNames]
 
 class Trait(ColorText, Find):
     '''
@@ -1200,7 +1200,7 @@ class Trait(ColorText, Find):
         self.ucName: str = name
         self.ucDescription: str = description
         self.ucCategory: str = category
-        self._searchOptions: list[str] = [str(self.ucNum), self.ucName.lower()]
+        self.searchOptions: list[str] = [str(self.ucNum), self.ucName.lower()]
 
     @classmethod
     def printInstances(cls) -> None:
@@ -1434,7 +1434,7 @@ class Player(ColorText):
     def hasTrait(self, targetTrait: Trait | str) -> bool:
         '''
         Returns True if `targetTrait` is one of the traits of the player, False otherwise.
-        `targetTrait` must be a Trait object or be in ._searchOptions.
+        `targetTrait` must be a Trait object or be in .searchOptions.
         '''
         return targetTrait in self.traits or Trait.find(targetTrait) in self.traits
 
@@ -1691,7 +1691,7 @@ class Club(Find):
         self.ucShortName: str = shortName
         if self.ucName.lower() == 'free agents':
             return
-        self._searchOptions: list[str] = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
+        self.searchOptions: list[str] = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
         self.__class__.instances.append(self)
     
     @property
@@ -1774,7 +1774,7 @@ class League(Find):
             club.nation = self.nation
             self.nation.clubs.append(club)
         self.capacity: int = len(self.clubs)
-        self._searchOptions: list[str] = [self.ucName.lower(), self.ucShortName] + [f'{nationName.lower()} {self.level}' for nationName in self.nation.ucNames]
+        self.searchOptions: list[str] = [self.ucName.lower(), self.ucShortName] + [f'{nationName.lower()} {self.level}' for nationName in self.nation.ucNames]
     
     def colorText(self, text: str) -> str:
         '''Colors the `text` with the main color of the nation.'''
