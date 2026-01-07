@@ -68,10 +68,10 @@ SINGLE_QUOTE = "'"
 LESS = '&lt;'
 MORE = '&gt;'
 
-PLAYER_MIN_AGE = 15
-PLAYER_DEFAULT_AGE = 16
-SQUAD_SIZE_MIN = 26
-SQUAD_SIZE_MAX = 39
+MIN_PLAYER_AGE = 15
+DEFAULT_PLAYER_AGE = 16
+MIN_SQUAD_SIZE = 26
+MAX_SQUAD_SIZE = 39
 
 ALL_POINTS = 300
 MAX_POINTS = 80
@@ -80,6 +80,8 @@ MAX_ATTRIBUTE_VALUE = 99
 
 MIN_CLUB_RATING = 27
 MAX_CLUB_RATING = 87
+
+SECONDARY_POSITION_KOE = 1
 
 MIN_NAME_LENGTH = 2
 MAX_NAME_LENGTH = 25
@@ -351,14 +353,16 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
             club = leagueClubs[-1]
             foreignPercent = 1 - (clubData['rating'] - 40) ** 1.5 / 550 - max(0, 70 - clubData['rating']) / 150
             club.players = []
-            playerCount = randint(SQUAD_SIZE_MIN, SQUAD_SIZE_MAX)
+            playerCount = randint(MIN_SQUAD_SIZE, MAX_SQUAD_SIZE)
             positionProbs = {pos: 1 for pos in Position.instances}
             for i in range(playerCount):
                 i *= 40 / (playerCount - 1)
                 pos = choices(list(positionProbs.keys()), list(positionProbs.values()))[0]
                 positionProbs[pos] /= 4
                 rating = clubData['rating'] - 1.2 * i ** .5 - max(0, i - 10) ** 2 / 60 + 6 * random() + 3
-                age = max(PLAYER_MIN_AGE, round(normalvariate(29 - (i + 1) ** 3 / 6400, 3.5 + i / 20)))
+                age = MIN_PLAYER_AGE - 1
+                while age < MIN_PLAYER_AGE:
+                    age = round(normalvariate(29 - (i + 1) ** 3 / 7200, 3.5 + i / 20))
                 potential = rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 3 - 2
                 nation = leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, [(len(Nation.instances) - j + 100) ** 8 for j in range(101, len(Nation.instances) + 101)])[0]
                 club.players.append(Player(
@@ -785,6 +789,8 @@ class Find:
         Each instance must have a `searchOptions` attribute containing strings that the instance can be found by.
         All strings in `searchOptions` must be uncolored and lowercase.
         '''
+        if cls is Find:
+            raise ValidationError('find(): function called with cls = Find.')
         newName: str = str(name).lower()
         if newName == 'free agents' or (hasattr(name, 'ucName') and name.ucName.lower() == 'free agents'):
             return freeAgents
@@ -1272,7 +1278,7 @@ class Player(ColorText):
     - `.instances`: A list of all Position instances.
     '''
     instances: ClassVar[list[Player]] = []
-    def __init__(self, nation: Nation | None, rating: float | None, potential: float | None, position: Position | None = None, age: int | float = PLAYER_DEFAULT_AGE, squad: str = ''):
+    def __init__(self, nation: Nation | None, rating: float | None, potential: float | None, position: Position | None = None, age: int | float = DEFAULT_PLAYER_AGE, squad: str = ''):
         '''
         Arguments:
         - `nation`: The nation of the player.
@@ -1322,7 +1328,7 @@ class Player(ColorText):
         positions = self.positions
         positions.remove(self.position)
         for position in positions[1:]:
-            if self.suit[position] >= -.5:
+            if self.suit[position] >= -SECONDARY_POSITION_KOE:
                 toReturn.append(position)
         return toReturn
     
@@ -1827,10 +1833,13 @@ chdir(dirname(abspath(__file__)))
 while True:
     settings, mainStyleDict = parseDatabase(list(files.values()) + list(dirs.values()), [Settings, createStyle, createNations, createPositions, createTraits, createLeagues], [files['settings'], files['style'], ], [2, 2, 10, 2, 2, 5])
     mainStyle = Style.from_dict(mainStyleDict)
+    
     nationNames = [str(nation.fifaRanking) for nation in Nation.instances]
     for nation in Nation.instances:
         nationNames += nation.ucNames
     nationNames += [nation.ucShortName for nation in Nation.instances]
+    
+    ### Testing
 
     # viewPlayerRankings('rating')
     # viewPlayerRankings('potential')
@@ -1842,6 +1851,8 @@ while True:
     # for k, v in zip(cnt.keys(), cnt.values()):
     #     cnt[k] = [v, f'{round(v / len(Player.instances) * 100, 2)}%', v / len(Player.instances) * 11]
     # input(cnt)
+
+    ### Inner game loop
 
     while True:
         setupFiles = getFiles(dirs['setups'])

@@ -28,7 +28,7 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.1
-  modifier: 0.3
+  modifier: 1.0
 - name: left winger
   shortName: LW
   color: rorange
@@ -84,7 +84,7 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.3
-  modifier: 3.0
+  modifier: 3.6
 - name: defensive midfielder
   shortName: CDM
   color: gyellow
@@ -140,4 +140,4 @@
     leftFoot: 0.0
     rightFoot: 0.0
   setPieceKoe: 0.005
-  modifier: 3.4
+  modifier: 3.0
