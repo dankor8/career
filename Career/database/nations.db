@@ -760,7 +760,7 @@
   - Philippines
   nationality: Filipino
   color: dblue
-- shortName: EST
+- shortName: ETH
   names:
   - Ethiopia
   nationality: Ethiopian
@@ -919,8 +919,8 @@
   color: dyellow
 - shortName: MRI
   names:
-  - Mauritania
-  nationality: Mauritanian
+  - Mauritius
+  nationality: Mauritian
   color: ured
 - shortName: BLZ
   names:

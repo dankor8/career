@@ -31,6 +31,7 @@ from sys import exit as sysExit
 from datetime import datetime
 from hashlib import sha3_224
 from time import sleep, time
+# import matplotlib.pyplot as plt
 
 ### File variables
 
@@ -116,7 +117,7 @@ def input(*message: Any, sep: str = ' ', default: str = "", completer: WordCompl
     message: str = sep.join([str(part) for part in message])
     try:
         return prompt(HTML(message), style = mainStyle, default = default, completer = completer)
-    except (ValueError, TypeError, AttributeError):
+    except (NameError, ValueError, TypeError, AttributeError):
         return origInput(message)
 
 def print(*values: Any, sep: str = ' ', end: str = '\n') -> None:
@@ -128,7 +129,7 @@ def print(*values: Any, sep: str = ' ', end: str = '\n') -> None:
     values: str = sep.join([str(part) for part in values])
     try:
         print_formatted_text(HTML(values), end = end, style = mainStyle)
-    except (ValueError, TypeError, AttributeError):
+    except (NameError, ValueError, TypeError, AttributeError):
         origPrint(values)
 
 def richFormat(text: str) -> str:
@@ -327,7 +328,7 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
     League.instances = []
     global freeAgents
     freeAgents = Club(0, 'Free agents', ['Free agents'], 'Free agents', '\u2500' * 3, ['ublack', 'uwhite'])
-    freeAgents.players = []
+    freeAgents.players: list[Player] = []
     Nation(['Free agents'], '\u2500' * 3, 'free agent', 'ublack', -1, [], [])
     League('Free agents', Nation.instances.pop(), [freeAgents])
     League.instances.pop()
@@ -352,7 +353,6 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
             leagueClubs.append(Club(clubData['rating'], clubData['fullName'], clubData['names'], clubData['nickname'], clubData['shortName'], clubData['colors']))
             club = leagueClubs[-1]
             foreignPercent = 1 - (clubData['rating'] - 40) ** 1.5 / 550 - max(0, 70 - clubData['rating']) / 150
-            club.players = []
             playerCount = randint(MIN_SQUAD_SIZE, MAX_SQUAD_SIZE)
             positionProbs = {pos: 1 for pos in Position.instances}
             for i in range(playerCount):
@@ -364,7 +364,9 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
                 while age < MIN_PLAYER_AGE:
                     age = round(normalvariate(29 - (i + 1) ** 3 / 7200, 3.5 + i / 20))
                 potential = rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 3 - 2
-                nation = leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, [(len(Nation.instances) - j + 100) ** 8 for j in range(101, len(Nation.instances) + 101)])[0]
+                weights = [1 / ((n.fifaRanking + 100) ** 7) for n in Nation.instances]
+                # print(sum(weights[:10]) / sum(weights), sum(weights[:50]) / sum(weights), sum(weights[:100]) / sum(weights))
+                nation: Nation = leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, weights)[0]
                 club.players.append(Player(
                     nation=nation,
                     rating=rating,
@@ -373,13 +375,18 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
                     age=age,
                     squad='first team',
                 ))
-                club.players[-1].club = club
-            freeAgent = choice(sorted(club.players, key=lambda x: x.rating, reverse=True)[11:])
+                club.players[-1].club: Club = club
+            freeAgent: Player = choice(sorted(club.players, key=lambda x: x.rating, reverse=True)[11:])
             freeAgent.club.players.remove(freeAgent)
-            freeAgent.club = freeAgents
+            freeAgent.club: Club = freeAgents
+            freeAgents.players.append(freeAgent)
+            freeAgents.nation.players.append(freeAgent)
         League(leagueData['name'], leagueData['nation'], leagueClubs)
         if progress:
             bar.update(task, advance= value / len(leaguesData))
+    
+    for nation in Nation.instances:
+        nation.pickTeam()
 
     clubShortNames = [club.ucShortName for club in Club.instances]
     seenShortNames = set()
@@ -426,6 +433,17 @@ def createNations(progress: bool = False, bar: Progress | None = None, task: Tas
         Nation(nation['names'], nation['shortName'], nation['nationality'], nation['color'], i, names['firstNames'], names['lastNames'])
         if progress:
             bar.update(task, advance=value / len(nations) / 2)
+
+    nationShortNames = [nation.ucShortName for nation in Nation.instances]
+    seenShortNames = set()
+    duplicateShortNames = set()
+    for x in nationShortNames:
+        if x in seenShortNames:
+            duplicateShortNames.add(x)
+        else:
+            seenShortNames.add(x)
+    if duplicateShortNames:
+        raise DatabaseError(f'There {"are" if len(duplicateShortNames) > 1 else "is a"} duplicate nation short name{"s" if len(duplicateShortNames) > 1 else ""}: {", ".join(duplicateShortNames)}.')
 
 def createTraits(progress: bool = False, bar: Progress | None = None, task: TaskID | None = None, value: int | float = 0) -> None:
     '''
@@ -684,10 +702,10 @@ def academyMenu(hero: dict[str, Any]) -> Club:
 
 def viewNationRankings() -> None:
     '''Prints worldwide nation rankings.'''
-    tableHeaders = ['№', Header('Code ', columnAlign = 'center'), 'Nation', 'Best league']
+    tableHeaders = ['№', Header('Code ', columnAlign = 'center'), 'Nation', 'Best league', 'Best club', '№Pl']
     tableRows = []
     for nation in Nation.instances:
-        tableRows.append([nation.fifaRanking, nation.shortName, nation.name, nation.leagues[0].name if nation.leagues else f'!fill {LINE}', ])
+        tableRows.append([nation.fifaRanking, nation.shortName, nation.name, nation.leagues[0].name if nation.leagues else f'!fill {LINE}', nation.leagues[0].sortedClubs[0].name if nation.leagues else f'!fill {LINE}', len(nation.players)])
     Table(tableRows, tableHeaders, '<bold>Worldwide national team rankings:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 def viewLeagueRankings(mode: str = 'average') -> None:
@@ -703,7 +721,7 @@ def viewClubRankings() -> None:
     tableHeaders = ['№', Header('Rating', columnAlign = 'center'), Header('League', columnAlign = 'center'), 'Colors', Header('Code ', columnAlign = 'center'), 'Generic name', 'Nickname']
     tableRows = []
     for i, club in enumerate(sorted(Club.instances, key = lambda x: x.rating, reverse=True), 1):
-        tableRows.append([i, str(round(club.rating, 2)).ljust(5, '0'), club.league.shortName, club.colorText('   ', bg = True) + club.color2Text('   ', bg = True), club.shortName, club.name, club.nickname])
+        tableRows.append([i, str(round(club.rating, 2)).ljust(5, '0'), club.league.shortName, club.colorText('   ', bg=True) + club.color2Text('   ', bg=True), club.shortName, club.name, club.nickname])
     Table(tableRows, tableHeaders, '<bold>Worldwide football club rankings:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 def viewPlayerRankings(mode: str = 'rating') -> None:
@@ -714,8 +732,8 @@ def viewPlayerRankings(mode: str = 'rating') -> None:
             sortFunc = lambda x: x.rating
         case 'potential':
             sortFunc = lambda x: x.potential
-    tableHeaders = ['№', 'Full name', 'Nation', 'Club', 'Pos', '2poses', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
-    tableRows = [[i, p.fullName, p.nation.name, p.club.shortName, p.position.shortName, p.shortSecondaryPositions, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(Player.instances, key=sortFunc, reverse=True)[:1000], 1)]
+    tableHeaders = ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
+    tableRows = [[i, p.fullName, p.nation.name, p.club.shortName, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(Player.instances, key=sortFunc, reverse=True)[:1000], 1)]
     Table(tableRows, tableHeaders, '<bold>Top 1000 players in the database:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 ### Misc functions
@@ -723,7 +741,7 @@ def viewPlayerRankings(mode: str = 'rating') -> None:
 def OPTAtoRating(optaPowerRanking: float) -> float:
     f'''
     Converts an OPTA Power Ranking to the in-game rating using this formula:\n
-    `inGameRating = optaPowerRanking * 3 / 5 + {MIN_CLUB_RATING}`
+    `inGameRating = optaPowerRanking * 3 / 5 + 27`
     '''
     return round(float(optaPowerRanking) * 3 / 5 + MIN_CLUB_RATING, 1)
 
@@ -749,11 +767,7 @@ def terminalHeight() -> int:
     return terminalSize()[1]
 
 def ordinal(n: int) -> str:
-    if 11 <= (n % 100) <= 13:
-        suff = 'th'
-    else:
-        suff = ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)]
-    return str(n) + suff
+    return str(n) + ('th' if 11 <= n % 100 <= 13 else ['th', 'st', 'nd', 'rd', 'th'][min(n % 10, 4)])
 
 ### Error classes
 
@@ -803,13 +817,13 @@ class Find:
 
 class ColorText:
     '''Placeholder for `colorText()`.'''
-    def colorText(self, text: str, color: str = 'default') -> str:
+    def colorText(self, text: str, color: str = 'default', bg: bool = False) -> str:
         '''Colors `text` with `color` in prompt_toolkit's HTML format.'''
         if not color:
             return text
         if color == 'default':
             color = self.color
-        return f'<{color}>{text}</{color}>'
+        return f'<{"bg" if bg else ""}{color}>{text}</{"bg" if bg else ""}{color}>'
 
 ### Classes
 
@@ -1134,6 +1148,8 @@ class Nation(ColorText, Find):
     - `.fifaRanking`: The FIFA ranking of the nation.
     - `.leagues`: A list of League objects that belong to the nation.
     - `.clubs`: A list of Club objects that belong to the nation.
+    - `.players`: A list of Player objects that belong to the nation.
+    - `.formattedLeagues`: A string that contains nicely formatted full names of the leagues the nation has.
     - `.color`: The main color of the nation.
     - `.names`: A list of all names of the nation.
     - `.name`: The main name of the nation. Same as `.names[0]`.
@@ -1141,10 +1157,14 @@ class Nation(ColorText, Find):
     - `.nationality`: The nationality of people from the nation. Example: Finnish.
     - `.firstNames`: A list of first names of people from the nation.
     - `.lastNames`: A list of last names of people from the nation.
+    - `.team`: A Club object that represents a national team.
+    - `.rating`: Shortcut for `.team.rating`.
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
-    - `.instances`: A list of all Nation instances.
+    - `.instances`: A list of all Nation instances except the free agents one.
+    - `.teams`: A list of all national teams.
     '''
     instances: ClassVar[list[Nation]] = []
+    teams: ClassVar[list[Club]] = []
     
     def __init__(self, names: list[str], shortName: str, nationality: str, color: str, fifaRanking: int, firstNames: list[str], lastNames: list[str]) -> None:
         '''
@@ -1161,9 +1181,8 @@ class Nation(ColorText, Find):
         self.color: str = color
         self.ucName: str = names[0]
         self.ucNames: list[str] = names
-        colored_names: list[str] = [self.colorText(name) for name in names]
-        self.name: str = colored_names[0]
-        self.names: list[str] = colored_names
+        self.names: list[str] = [self.colorText(name) for name in names]
+        self.name: str = self.names[0]
         self.shortName: str = self.colorText(shortName)
         self.ucShortName: str = shortName
         self.nationality: str = self.colorText(nationality)
@@ -1173,7 +1192,49 @@ class Nation(ColorText, Find):
         self.lastNames: list[str] = lastNames
         self.leagues: list[League] = []
         self.clubs: list[Club] = []
+        self.players: list[Player] = []
         self.searchOptions: list[str] = [str(self.fifaRanking), self.ucShortName.lower()] + [nationName.lower() for nationName in self.ucNames]
+        self.team = Club(-1, self.ucName, self.ucNames, self.nationality.capitalize(), self.ucShortName, [self.color, 'default'], nationalTeam=True)
+
+    def pickTeam(self):
+        self.team.players = sorted(self.players, key=lambda x: x.rating, reverse=True)[:25]
+        return self.team.players
+
+    @property
+    def rating(self) -> float:
+        return self.team.rating
+
+    @property
+    def formattedLeagues(self) -> str:
+        return ', '.join([league.name for league in self.leagues])
+
+    def viewProfile(self, caption: str = '<uyellow>Press Enter to go back to the start menu: </uyellow>', end: bool = True) -> None:
+        '''Shows the profile of the nation.'''
+        clear()
+        print(f'{alignText(f"<bold>Free agents overview:</bold>", terminalWidth(), 'center', LINE)}\n<grey>There is currently a total of <lgrey><bold>{len(freeAgents.players)}</bold></lgrey> free agents.</grey>' if self is freeAgents.nation else f'''{alignText(f"<bold>{self.name}'s profile:</bold>", terminalWidth(), 'center', LINE)}
+<bold>Name:</bold>               {self.name}.
+<bold>FIFA ranking:</bold>       {self.fifaRanking}.
+<bold>League count:</bold>       {len(self.leagues)}.
+<bold>Club count:</bold>         {len(self.clubs)}.
+<bold>Player count:</bold>       {len(self.players)}.\
+{f'\n<uorange>Rating:             {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}''')
+        if self.leagues and not (self is freeAgents.nation):
+            tableHeaders = ['№', 'Rating', 'Code', 'League', 'Best clubs']
+            tableRows = []
+            for i, league in enumerate(sorted(self.leagues, key = lambda x: x.getRating(), reverse=True), 1):
+                tableRows.append([i, str(league.getRating()).ljust(5, '0'), league.shortName, league.name, ', '.join([club.name for club in league.sortedClubs[:3]])])
+            Table(tableRows, tableHeaders, f'<bold>Best leagues in {self.ucName}:</bold>').print()
+        if self.players:
+            tableHeaders = ['№', 'Full name', 'Nat', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
+            tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True)[:10], 1)]
+            Table(tableRows, tableHeaders, '<bold>Best free agents by overall:</bold>' if self is freeAgents.nation else f'<bold>Best players from {self.ucName}:</bold>').print()
+        if len(self.players) >= 50 or self is freeAgents.nation:
+            tableHeaders = ['№', 'Full name', 'Nat', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
+            tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.potential if x.potential - x.rating > 4 and x.age < 25 else 0, reverse=True)[:10], 1)]
+            Table(tableRows, tableHeaders, '<bold>Best free agents by potential:</bold>' if self is freeAgents.nation else f'<bold>Best prospects from {self.ucName}:</bold>').print()
+        if end:
+            input(caption)
+        clear()
 
 class Trait(ColorText, Find):
     '''
@@ -1258,6 +1319,7 @@ class Player(ColorText):
     Attributes:
     - `.age`: The age of the player.
     - `.nation`: The nation of the player.
+    - `.club`: The club of the player.
     - `.attributes`: Shortcut for `[.pac, .sho, .pas, .dri, .dfn, .phy]`.
     - `.foot`: The primary foot of the player (`'left'` or `'right'`).
     - `.traits`: A list of traits that the player has.
@@ -1317,6 +1379,7 @@ class Player(ColorText):
         self.ucFullName = f'{choice(self.nation.firstNames)} {self.ucShirtName}'
         self.fullName = self.colorText(self.ucFullName)
         self.shirtName = self.colorText(self.ucShirtName)
+        self.nation.players.append(self)
 
     @property
     def position(self) -> Position:
@@ -1334,16 +1397,13 @@ class Player(ColorText):
     
     @property
     def fullSecondaryPositions(self) -> str:
-        return ', '.join([pos.name for pos in self.secondaryPositions]) if self.secondaryPositions else 'none'
+        sp = self.secondaryPositions
+        return ', '.join([pos.name for pos in sp]) if sp else 'none'
     
     @property
     def shortSecondaryPositions(self) -> str:
         sp = self.secondaryPositions
-        if len(sp) > 3:
-            return ', '.join([pos.shortName for pos in sp[:2]]) + ', ...'
-        elif sp:
-            return ', '.join([pos.shortName for pos in sp])
-        return 'none'
+        return ' '.join([pos.shortName for pos in sp]) if sp else 'none'
     
     @property
     def positions(self) -> list[Position]:
@@ -1667,13 +1727,14 @@ class Club(Find):
     - `.fullName`: The official name of the club.
     - `.nickname`: The nickname of the club.
     - `.shortName`: A unique 3 letter code that can be used to identify the club.
+    - `.nationalTeam`: Contains True if the club is a national team, False otherwise.
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
     - `.i{attribute}`: Same as `.{attribute}` but is of type `int` instead of `float`.
     - `.players`: A list of all players currently at the club.
-    - `.instances`: A list of all Club instances.
+    - `.instances`: A list of all Club instances except national teams and the free agents club.
     '''
     instances: ClassVar[list[Club]] = []
-    def __init__(self, ovr: float, fullName: str, names: list[str], nickname: str, shortName: str, colors: list[str]):
+    def __init__(self, ovr: float, fullName: str, names: list[str], nickname: str, shortName: str, colors: list[str], nationalTeam: bool = False):
         '''
         Arguments:
         - `ovr`: The in-game overall rating of the club.
@@ -1695,7 +1756,12 @@ class Club(Find):
         self.ucNickname: str = nickname
         self.shortName: str = self.colorText(shortName)
         self.ucShortName: str = shortName
-        if self.ucName.lower() == 'free agents':
+        self.nationalTeam: bool = nationalTeam
+        self.players: list[Player] = []
+        try:
+            if self is freeAgents or self.nationalTeam:
+                return
+        except NameError:
             return
         self.searchOptions: list[str] = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
         self.__class__.instances.append(self)
@@ -1720,10 +1786,7 @@ class Club(Find):
 <bold>League:</bold>          {self.league.name}.\
 {f'\n<uorange>Rating:          {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}''')
         t = Table([[i, p.position.shortName, p.nation.name, p.fullName, *p.iattributes, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True), 1)], ['№', 'Pos', 'Nation', 'Full name', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], f"<bold>{self.fullName}'s senior squad:</bold>", caption if end else None)
-        if end:
-            t.input()
-        else:
-            t.print()
+        t.print(end)
         clear()
 
     def colorText(self, text: str, bg: bool = False) -> str:
@@ -1756,6 +1819,7 @@ class League(Find):
     - `.sortedClubs`: Same as `.clubs` but sorted by their rating in descending order.
     - `.capacity`: How many clubs participate in the league.
     - `.rating`: Shortcut for `.getRating()`.
+    - `.instances`: A list of all League instances except the free agents one.
     '''
     instances: ClassVar[list[League]] = []
     
@@ -1841,10 +1905,36 @@ while True:
     
     ### Testing
 
+    # nation_counts = {n.ucName: 0 for n in Nation.instances}
+    # for player in Player.instances:
+    #     if hasattr(player, 'nation') and not (player.club.league.nation is player.nation):
+    #         nation_counts[player.nation.ucName] += 1
+    # sorted_nations = sorted(Nation.instances, key=lambda n: n.fifaRanking)
+    # names = [n.ucName for n in sorted_nations if n.fifaRanking > 0]  # Exclude "Free agents" (-1)
+    # counts = [nation_counts[name] for name in names]
+    # fig, ax = plt.subplots(figsize=(20, 6))
+    # ax.bar(range(len(names)), counts, color='steelblue', edgecolor='none')
+    # ax.set_xlabel('Nation (sorted by FIFA Ranking)', fontsize=12)
+    # ax.set_ylabel('Number of Players', fontsize=12)
+    # ax.set_title('Player Distribution by Nation', fontsize=14)
+    # N = 1
+    # ax.set_xticks(range(0, len(names), N))
+    # ax.set_xticklabels([names[i] for i in range(0, len(names), N)], rotation=45, ha='right', fontsize=8)
+    # ax.yaxis.grid(True, linestyle='--', alpha=0.7)
+    # ax.set_axisbelow(True)
+    # plt.tight_layout()
+    # plt.show()
+
     # viewPlayerRankings('rating')
     # viewPlayerRankings('potential')
+
     # for club in sorted(Club.instances, key=lambda x: x.rating + random() * 10, reverse=True):
     #     club.viewProfile()
+
+    # freeAgents.nation.viewProfile()
+    # for nation in sorted(Nation.instances, key=lambda x: x.rating, reverse=True):
+    #     nation.viewProfile()
+    
     # cnt = {p.name: 0 for p in Position.instances}
     # for pl in Player.instances:
     #     cnt[pl.position.name] += 1
