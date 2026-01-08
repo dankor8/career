@@ -73,6 +73,7 @@ MIN_PLAYER_AGE = 15
 DEFAULT_PLAYER_AGE = 16
 MIN_SQUAD_SIZE = 26
 MAX_SQUAD_SIZE = 39
+NATION_SQUAD_SIZE = 25
 
 ALL_POINTS = 300
 MAX_POINTS = 80
@@ -81,6 +82,8 @@ MAX_ATTRIBUTE_VALUE = 99
 
 MIN_CLUB_RATING = 27
 MAX_CLUB_RATING = 87
+FREE_AGENT_CHANCE = 0.3
+FREE_AGENT_AVERAGE_RATING = 45
 
 SECONDARY_POSITION_KOE = 1
 
@@ -316,6 +319,27 @@ def parseDatabase(pathsToCheck: list[str], funcsToCheck: list[Callable], outputs
         raiseFatalError()
     return toReturn
 
+def genPlayer(domesticPercent, i, clubRating, leagueNation):
+    positionProbs = {pos: 1 for pos in Position.instances}
+    pos = choices(list(positionProbs.keys()), list(positionProbs.values()))[0]
+    positionProbs[pos] /= 4
+    rating = clubRating - 1.2 * i ** .5 - max(0, i - 10) ** 2 / 60 + 6 * random() + 3
+    age = MIN_PLAYER_AGE - 1
+    while age < MIN_PLAYER_AGE:
+        age = round(normalvariate(29 - (i + 1) ** 3 / 7200, 3.5 + i / 20))
+    potential = rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 3 - 2
+    weights = [1 / ((n.fifaRanking + 100) ** 7) for n in Nation.instances]
+    # print(sum(weights[:10]) / sum(weights), sum(weights[:50]) / sum(weights), sum(weights[:100]) / sum(weights))
+    nation: Nation = leagueNation if random() < domesticPercent else choices(Nation.instances, weights)[0]
+    return Player(
+        nation=nation,
+        rating=rating,
+        potential=potential,
+        position=pos,
+        age=age,
+        squad='first team',
+    )
+
 def createLeagues(progress: bool = False, bar: Progress | None = None, task: TaskID | None = None, value: int | float = 0) -> None:
     '''
     Creates all League and Club objects from `files['leagues']`.
@@ -330,7 +354,7 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
     freeAgents = Club(0, 'Free agents', ['Free agents'], 'Free agents', '\u2500' * 3, ['ublack', 'uwhite'])
     freeAgents.players: list[Player] = []
     Nation(['Free agents'], '\u2500' * 3, 'free agent', 'ublack', -1, [], [])
-    League('Free agents', Nation.instances.pop(), [freeAgents])
+    League('Friendly', Nation.instances.pop(), [freeAgents])
     League.instances.pop()
     global frames
     frames = loadData(files['frames'])
@@ -352,40 +376,27 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
                 raise DatabaseError(f'Length of club short names must be {CLUB_SHORT_NAME_LENGTH}, while {clubData["shortName"]}\'s is {len(clubData["shortName"])}.')
             leagueClubs.append(Club(clubData['rating'], clubData['fullName'], clubData['names'], clubData['nickname'], clubData['shortName'], clubData['colors']))
             club = leagueClubs[-1]
-            foreignPercent = 1 - (clubData['rating'] - 40) ** 1.5 / 550 - max(0, 70 - clubData['rating']) / 150
+            domesticPercent = 1 - (clubData['rating'] - 40) ** 1.5 / 550 - max(0, 70 - clubData['rating']) / 150
             playerCount = randint(MIN_SQUAD_SIZE, MAX_SQUAD_SIZE)
-            positionProbs = {pos: 1 for pos in Position.instances}
             for i in range(playerCount):
                 i *= 40 / (playerCount - 1)
-                pos = choices(list(positionProbs.keys()), list(positionProbs.values()))[0]
-                positionProbs[pos] /= 4
-                rating = clubData['rating'] - 1.2 * i ** .5 - max(0, i - 10) ** 2 / 60 + 6 * random() + 3
-                age = MIN_PLAYER_AGE - 1
-                while age < MIN_PLAYER_AGE:
-                    age = round(normalvariate(29 - (i + 1) ** 3 / 7200, 3.5 + i / 20))
-                potential = rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 3 - 2
-                weights = [1 / ((n.fifaRanking + 100) ** 7) for n in Nation.instances]
-                # print(sum(weights[:10]) / sum(weights), sum(weights[:50]) / sum(weights), sum(weights[:100]) / sum(weights))
-                nation: Nation = leagueData['nation'] if random() < foreignPercent else choices(Nation.instances, weights)[0]
-                club.players.append(Player(
-                    nation=nation,
-                    rating=rating,
-                    potential=potential,
-                    position=pos,
-                    age=age,
-                    squad='first team',
-                ))
+                club.players.append(genPlayer(domesticPercent, i, clubData['rating'], leagueData['nation']))
                 club.players[-1].club: Club = club
-            freeAgent: Player = choice(sorted(club.players, key=lambda x: x.rating, reverse=True)[11:])
-            freeAgent.club.players.remove(freeAgent)
-            freeAgent.club: Club = freeAgents
-            freeAgents.players.append(freeAgent)
-            freeAgents.nation.players.append(freeAgent)
+            if random() < FREE_AGENT_CHANCE:
+                freeAgent: Player = choice(sorted(club.players, key=lambda x: x.rating, reverse=True)[11:])
+                freeAgent.club.players.remove(freeAgent)
+                freeAgent.club: Club = freeAgents
+                freeAgents.players.append(freeAgent)
+                freeAgents.nation.players.append(freeAgent)
         League(leagueData['name'], leagueData['nation'], leagueClubs)
         if progress:
             bar.update(task, advance= value / len(leaguesData))
     
-    for nation in Nation.instances:
+    for j, nation in enumerate(Nation.instances):
+        for i in range(randint(int(NATION_SQUAD_SIZE * 1.2), int(NATION_SQUAD_SIZE * 1.5))):
+            freeAgents.players.append(genPlayer(1, i, FREE_AGENT_AVERAGE_RATING + (.5 - j / (len(nation.instances) - 1)) * 15, nation))
+            freeAgents.players[-1].club: Club = freeAgents
+        nation.team.league = freeAgents.league
         nation.pickTeam()
 
     clubShortNames = [club.ucShortName for club in Club.instances]
@@ -804,10 +815,12 @@ class Find:
         All strings in `searchOptions` must be uncolored and lowercase.
         '''
         if cls is Find:
-            raise ValidationError('find(): function called with cls = Find.')
+            raise ValidationError('find(): function called with cls=Find.')
         newName: str = str(name).lower()
         if newName == 'free agents' or (hasattr(name, 'ucName') and name.ucName.lower() == 'free agents'):
             return freeAgents
+        if newName == 'friendly':
+            return freeAgents.league
         for obj in cls.instances:
             if newName in obj.searchOptions or name is obj:
                 return obj
@@ -1194,10 +1207,10 @@ class Nation(ColorText, Find):
         self.clubs: list[Club] = []
         self.players: list[Player] = []
         self.searchOptions: list[str] = [str(self.fifaRanking), self.ucShortName.lower()] + [nationName.lower() for nationName in self.ucNames]
-        self.team = Club(-1, self.ucName, self.ucNames, self.nationality.capitalize(), self.ucShortName, [self.color, 'default'], nationalTeam=True)
+        self.team = Club(-1, self.ucName, self.ucNames, f'The {self.nationality} Team', self.ucShortName, [self.color, 'default'], nationalTeam=True)
 
     def pickTeam(self):
-        self.team.players = sorted(self.players, key=lambda x: x.rating, reverse=True)[:25]
+        self.team.players = sorted(self.players, key=lambda x: x.rating, reverse=True)[:NATION_SQUAD_SIZE]
         return self.team.players
 
     @property
@@ -1228,7 +1241,7 @@ class Nation(ColorText, Find):
             tableHeaders = ['№', 'Full name', 'Nat', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
             tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True)[:10], 1)]
             Table(tableRows, tableHeaders, '<bold>Best free agents by overall:</bold>' if self is freeAgents.nation else f'<bold>Best players from {self.ucName}:</bold>').print()
-        if len(self.players) >= 50 or self is freeAgents.nation:
+        if len(self.players) >= 100 or self is freeAgents.nation:
             tableHeaders = ['№', 'Full name', 'Nat', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
             tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.potential if x.potential - x.rating > 4 and x.age < 25 else 0, reverse=True)[:10], 1)]
             Table(tableRows, tableHeaders, '<bold>Best free agents by potential:</bold>' if self is freeAgents.nation else f'<bold>Best prospects from {self.ucName}:</bold>').print()
@@ -1932,6 +1945,7 @@ while True:
     #     club.viewProfile()
 
     # freeAgents.nation.viewProfile()
+    
     # for nation in sorted(Nation.instances, key=lambda x: x.rating, reverse=True):
     #     nation.viewProfile()
     
