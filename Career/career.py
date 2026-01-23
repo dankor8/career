@@ -1,17 +1,14 @@
 ### TODO
+### add more descriptions
 ### add GK!
-### check if ages are correct
 ### main cycle?
 
 ### Imports
-
 from __future__ import annotations
-
-from typing import Any, Callable, ClassVar
 
 from rich.progress import Progress, TaskID
 # from rich.layout import Layout
-from rich import inspect
+# from rich import inspect
 
 from prompt_toolkit import print_formatted_text, prompt
 from prompt_toolkit.completion import WordCompleter
@@ -23,14 +20,16 @@ from os.path import getmtime, exists, dirname, abspath
 
 from random import random, choice, choices, randint, normalvariate
 from questionary import select as questionary, Choice
+from yaml import safe_load, safe_dump, YAMLError
 from colorama import just_fix_windows_console
 from pathvalidate import is_valid_filename
-from yaml import safe_load, safe_dump, YAMLError
+from typing import Any, Callable, ClassVar
 from traceback import format_exc
-from sys import exit as sysExit
+from sys import exit as fullExit
 from datetime import datetime
 from hashlib import sha3_224
 from time import sleep, time
+from pprint import pprint
 # import matplotlib.pyplot as plt
 
 ### File variables
@@ -323,12 +322,12 @@ def genPlayer(domesticPercent, i, clubRating, leagueNation):
     positionProbs = {pos: 1 for pos in Position.instances}
     pos = choices(list(positionProbs.keys()), list(positionProbs.values()))[0]
     positionProbs[pos] /= 4
-    rating = clubRating - 1.2 * i ** .5 - max(0, i - 10) ** 2 / 60 + 6 * random() + 3
+    rating = Calc.playerRating(clubRating, i)
     age = MIN_PLAYER_AGE - 1
     while age < MIN_PLAYER_AGE:
-        age = round(normalvariate(29 - (i + 1) ** 3 / 7200, 3.5 + i / 20))
-    potential = rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 3 - 2
-    weights = [1 / ((n.fifaRanking + 100) ** 7) for n in Nation.instances]
+        age = Calc.playerAge(i)
+    potential = Calc.playerPrimaryPotential(rating, age, i)
+    weights = [Calc.nationSelectionWeight(n.fifaRanking) for n in Nation.instances]
     # print(sum(weights[:10]) / sum(weights), sum(weights[:50]) / sum(weights), sum(weights[:100]) / sum(weights))
     nation: Nation = leagueNation if random() < domesticPercent else choices(Nation.instances, weights)[0]
     return Player(
@@ -366,7 +365,7 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
         leagueClubs = []
         for clubData in leagueData['clubs']:
             if str(clubData['rating'])[-1] == '!':
-                clubData['rating'] = OPTAtoRating(clubData['rating'][:-1])
+                clubData['rating'] = Calc.fromOPTA(clubData['rating'][:-1])
             if not MIN_CLUB_RATING <= clubData['rating'] <= MAX_CLUB_RATING:
                 raise DatabaseError(f'Rating of clubs must be between {MIN_CLUB_RATING} and {MAX_CLUB_RATING} (0 and 100 in OPTA power rankings), while {clubData["names"][0]}\'s is {clubData["rating"]}.')
             for name in clubData['names'] + [clubData['nickname']]:
@@ -376,7 +375,7 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
                 raise DatabaseError(f'Length of club short names must be {CLUB_SHORT_NAME_LENGTH}, while {clubData["shortName"]}\'s is {len(clubData["shortName"])}.')
             leagueClubs.append(Club(clubData['rating'], clubData['fullName'], clubData['names'], clubData['nickname'], clubData['shortName'], clubData['colors']))
             club = leagueClubs[-1]
-            domesticPercent = 1 - (clubData['rating'] - 40) ** 1.5 / 550 - max(0, 70 - clubData['rating']) / 150
+            domesticPercent = Calc.clubDomesticPercent(clubData['rating'])
             playerCount = randint(MIN_SQUAD_SIZE, MAX_SQUAD_SIZE)
             for i in range(playerCount):
                 i *= 40 / (playerCount - 1)
@@ -394,7 +393,7 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
     
     for j, nation in enumerate(Nation.instances):
         for i in range(randint(int(NATION_SQUAD_SIZE * 1.2), int(NATION_SQUAD_SIZE * 1.5))):
-            freeAgents.players.append(genPlayer(1, i, FREE_AGENT_AVERAGE_RATING + (.5 - j / (len(nation.instances) - 1)) * 15, nation))
+            freeAgents.players.append(genPlayer(1, i, Calc.freeAgentRating(j), nation))
             freeAgents.players[-1].club: Club = freeAgents
         nation.team.league = freeAgents.league
         nation.pickTeam()
@@ -586,7 +585,7 @@ def notReadyWarning() -> None:
 def raiseFatalError() -> None:
     '''Exits the application after an error.'''
     origInput('\nPress Enter to terminate the application. ')
-    sysExit()
+    fullExit()
 
 ### Menus and rankings
 
@@ -690,7 +689,7 @@ def academyMenu(hero: dict[str, Any]) -> Club:
     '''
     offersFrom: list[Club] = []
     while len(offersFrom) < 2:
-        offersFrom = list(set(choices(Club.instances, [(i + (len(Club.instances) if club.nation is hero['nation'] else 1)) ** 1.5 for i, club in enumerate(Club.instances)], k=choice([2] * 3 + [3] * 4 + [4] * 2 + [5]))))
+        offersFrom = list(set(choices(Club.instances, [Calc.academyOfferClubWeight(i, club.nation is hero['nation']) for i, club in enumerate(Club.instances)], k=Calc.academyOfferCount())))
     options: list[MenuOption] = [MenuOption(club.ucName, club.colors[0], f'{club.ucName} want {hero['fullName']} to join their academy.\nTheir senior team plays in the {club.league.ucName} which is {club.nation.ucName}\'s {"top flight" if club.league.level == 1 else f"{ordinal(club.league.level)} division"}.', club) for club in offersFrom] + [MenuOption('Reject all offers', 'dred', 'Reject all offers and stay without a club.', freeAgents)]
     try:
         while True:
@@ -744,17 +743,10 @@ def viewPlayerRankings(mode: str = 'rating') -> None:
         case 'potential':
             sortFunc = lambda x: x.potential
     tableHeaders = ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
-    tableRows = [[i, p.fullName, p.nation.name, p.club.shortName, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(Player.instances, key=sortFunc, reverse=True)[:1000], 1)]
+    tableRows = [[i, p.fullName, p.nation.name, p.club.shortName, p.position.shortName, *p.iattributes, p.foot, p.iage, p.irating, p.ipotential] for i, p in enumerate(sorted(Player.instances, key=sortFunc, reverse=True)[:1000], 1)]
     Table(tableRows, tableHeaders, '<bold>Top 1000 players in the database:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 ### Misc functions
-
-def OPTAtoRating(optaPowerRanking: float) -> float:
-    f'''
-    Converts an OPTA Power Ranking to the in-game rating using this formula:\n
-    `inGameRating = optaPowerRanking * 3 / 5 + 27`
-    '''
-    return round(float(optaPowerRanking) * 3 / 5 + MIN_CLUB_RATING, 1)
 
 def removeExtension(file: str, extension: str = FILE_EXTENSION) -> str:
     '''Removes the given extension from the given file path.'''
@@ -783,23 +775,23 @@ def ordinal(n: int) -> str:
 ### Error classes
 
 class GameError(Exception):
-    """Base exception for the game."""
+    '''Base exception class.'''
     pass
 
 class DatabaseError(GameError):
-    """Database-related errors."""
+    '''Class for database-related errors.'''
     pass
 
 class ValidationError(GameError):
-    """Input validation errors."""
+    '''Class for input validation errors.'''
     pass
 
 class SaveLoadError(GameError):
-    """Save/load operation errors."""
+    '''Class for save/load errors.'''
     pass
 
 class QuitError(Exception):
-    """Used to exit menus and return to previous screens."""
+    '''Class for helper errors used to exit previous screens and return back, usually to a menu.'''
     pass
 
 ### Placeholder classes
@@ -837,6 +829,76 @@ class ColorText:
         if color == 'default':
             color = self.color
         return f'<{"bg" if bg else ""}{color}>{text}</{"bg" if bg else ""}{color}>'
+
+class Calc:
+    '''Class for formulas.'''
+    @staticmethod
+    def playerRating(clubRating: float, i: int) -> float:
+        return clubRating - 1.2 * i ** .5 - max(0, i - 10) ** 2 / 60 + 6 * random() + 3
+        
+    @staticmethod
+    def playerAge(i: int) -> float:
+        return normalvariate(29 - (i + 1) ** 3 / 7200, 3.5 + i / 20)
+        
+    @staticmethod
+    def playerPrimaryPotential(rating: float, age: float, i: int) -> float:
+        return rating + max(0, 30 - age) ** ((age + 25) / 30) * (i - 10) ** 2 / 1600 + random() * (35 - age) / 3 - 2
+        
+    @staticmethod
+    def nationSelectionWeight(fifaRanking: int) -> float:
+        return 1 / ((fifaRanking + 100) ** 7)
+        
+    @staticmethod
+    def clubDomesticPercent(rating: float) -> float:
+        return 1 - (rating - 40) ** 1.5 / 550 - max(0, 70 - rating) / 150
+        
+    @staticmethod
+    def fromOPTA(optaRanking: float) -> float:
+        f'''
+        Converts an OPTA Power Ranking to the in-game rating using this formula:\n
+        `inGameRating = optaPowerRanking * 3 / 5 + 27`
+        '''
+        return float(optaRanking) * 3 / 5 + 27, 1
+        
+    @staticmethod
+    def freeAgentRating(nationI: int) -> float:
+        return FREE_AGENT_AVERAGE_RATING + (.5 - nationI / (len(Nation.instances) - 1)) * 15
+    
+    @staticmethod
+    def academyOfferCount() -> int:
+        return choice([2] * 3 + [3] * 4 + [4] * 2 + [5])
+    
+    @staticmethod
+    def academyOfferClubWeight(i: int, clubNationIsHeroNation) -> float:
+        return (i + (len(Club.instances) if clubNationIsHeroNation else 1)) ** 1.5
+    
+    @staticmethod
+    def heroPotential() -> float:
+        return 80 + random() * 15 #TODO change this
+    
+    @staticmethod
+    def playerFoot() -> str:
+        return 'right' if random() < .8 else 'left'
+    
+    @staticmethod
+    def attributeValueFromFramePart(rating: float, framePart: float) -> float:
+        return min(MAX_ATTRIBUTE_VALUE, rating + framePart + sum([random() - .5 for _ in range(6)]))
+    
+    @staticmethod
+    def playerCategoryWeight(cat: float) -> float:
+        return cat ** 15
+    
+    @staticmethod
+    def traitNum() -> int:
+        return max(1, int(round(normalvariate(2.5, 1))))
+    
+    @staticmethod
+    def generateTrait(weightings: list[float]) -> Trait:
+        return Trait.instances[choices([randint(i, i + 4) for i in range(0, 21, 5)], weights=weightings)[0]]
+    
+    @staticmethod
+    def suitValue(targetPositionScore: float, currentPositionScore: float) -> float:
+        return -max(0, sum([3 * random() - .5 for _ in range(max(1, int(targetPositionScore - currentPositionScore + 1.5 * random())))]))
 
 ### Classes
 
@@ -1239,11 +1301,11 @@ class Nation(ColorText, Find):
             Table(tableRows, tableHeaders, f'<bold>Best leagues in {self.ucName}:</bold>').print()
         if self.players:
             tableHeaders = ['№', 'Full name', 'Nat', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
-            tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True)[:10], 1)]
+            tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.iage, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True)[:10], 1)]
             Table(tableRows, tableHeaders, '<bold>Best free agents by overall:</bold>' if self is freeAgents.nation else f'<bold>Best players from {self.ucName}:</bold>').print()
         if len(self.players) >= 100 or self is freeAgents.nation:
             tableHeaders = ['№', 'Full name', 'Nat', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
-            tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.potential if x.potential - x.rating > 4 and x.age < 25 else 0, reverse=True)[:10], 1)]
+            tableRows = [[i, p.fullName, p.nation.shortName, p.club.name, p.position.shortName, *p.iattributes, p.foot, p.iage, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.potential if x.potential - x.rating > 4 and x.age < 25 else 0, reverse=True)[:10], 1)]
             Table(tableRows, tableHeaders, '<bold>Best free agents by potential:</bold>' if self is freeAgents.nation else f'<bold>Best prospects from {self.ucName}:</bold>').print()
         if end:
             input(caption)
@@ -1364,24 +1426,24 @@ class Player(ColorText):
         - `squad`: The squad that the player is currently in. For example, `'U18'`.
         '''
         self.__class__.instances.append(self)
-        self.age = age
+        self.age: float = age
         if isinstance(self, Hero):
             self.squad = 'U18'
-            self.potential = 80 + 15 * random()
+            self.potential = Calc.heroPotential()
             return
         if nation is None or rating is None or potential is None or position is None:
             raise ValidationError("Player.__init__(): nation, rating, potential, and position are required for non-Hero players.")
-        self.nation = nation
-        self.attributes = [min(MAX_ATTRIBUTE_VALUE, attrib + rating + sum([random() - .5 for _ in range(6)])) for attrib in choice(frames[round(rating)][position.ucShortName])]
-        self.foot = 'right' if random() < .8 else 'left'
-        self.traits = []
+        self.nation: Nation = nation
+        self.attributes = [Calc.attributeValueFromFramePart(rating, framePart) for framePart in choice(frames[round(rating)][position.ucShortName])]
+        self.foot = Calc.playerFoot()
+        self.traits: list[Trait] = []
         categories: list[float] = [(self.phy + self.pac) / 2, self.sho, (self.pas + self.dri) / 2, self.dfn]
-        weightings: list[float] = [cat ** 15 for cat in categories]
+        weightings: list[float] = [Calc.playerCategoryWeight(cat) for cat in categories]
         wsum: float = sum(weightings)
-        weightings = [w / wsum / (1 + position.setPieceKoe) for w in weightings] + [position.setPieceKoe]
-        traitNum: int = max(1, round(normalvariate(2.5, 1)))
+        weightings: list[float] = [w / wsum * (1 - position.setPieceKoe) for w in weightings] + [position.setPieceKoe]
+        traitNum: int = Calc.traitNum()
         while len(self.traits) < traitNum:
-            toAppend: Trait = Trait.instances[choices([randint(i, i + 4) for i in range(0, 21, 5)], weights=weightings)[0]]
+            toAppend: Trait = Calc.generateTrait(weightings)
             if not toAppend in self.traits:
                 self.traits.append(toAppend)
         self.suit = self.genSuit(position)
@@ -1428,25 +1490,44 @@ class Player(ColorText):
             ### Age based
             'young': 3 - (self.age - 16) ** 2 / 3,
             'promising': 3 - (self.age - 18) ** 2 / 2,
-            'veteran': 1.3 ** (self.age - 33),
+            'veteran': min(4, 1.5 ** (self.age - 33)),
             ### Attribute based
-            'pacey': self.getDifferenceFromMax(self.pac) / 5,
+            'pacey': self.getDifferenceFromMax(self.pac) / 4,
             'lethal': self.getDifferenceFromMax(self.sho) / 3,
             'creative': self.getDifferenceFromMax(self.pas) / 3,
             'skillful': self.getDifferenceFromMax(self.dri) / 3,
             'tenacious': self.getDifferenceFromMax(self.dfn) / 3,
-            'robust': self.getDifferenceFromMax(self.phy) / 5,
-            ### Profile based
-            'versatile': len(self.secondaryPositions) ** 1.5 / 3,
+            'robust': self.getDifferenceFromMax(self.phy) / 4,
+            ### Quality based
+            'left-footed': 2 if self.foot == 'left' else 0,
+            'versatile': len(self.secondaryPositions) ** 1.5 / 2.5,
+            ### Trait based
+            'tireless': 2.7 if self.hasTrait('Engine') else 0,
+            'tricky': 2.8 if self.hasTrait('Fox') else 0,
+            'ambidextrous': 2.5 if self.hasTrait('Weak Foot') else 0,
+            'special': len(self.traits) ** 1.4 / 3,
+            'magical': (max(0, sum([int(trait.ucCategory == 'Technical') * 3 + int(trait.ucCategory == 'Attacking') * 2 for trait in self.traits]) - len(self.traits)) ** 0.7) if self.rating > 80 else 0,
+            'unforgiving': (max(0, sum([int(trait.ucCategory == 'Technical') * 2 + int(trait.ucCategory == 'Attacking') * 3 for trait in self.traits]) - len(self.traits)) ** 0.7) if self.rating > 80 else 0,
+            ### Rating based
+            'superstar': 10 if self.rating >= 93.5 else 0,
+            'exceptional': 8 if self.rating >= 91.5 else 0,
+            'world class': (self.rating - 70) ** 1.35 / 20,
+            'legendary': ((self.rating - 70) ** 1.35 / 20) ** 2.8 * self.age ** 7 / 300_000_000_000,
+            'rising': (self.rating - 60) / 10 if self.age < 23 else 0,
+            ### Misc
             self.nation.ucNationality: 1
         }
+        # pprint(sorted(zip(descriptions.keys(), descriptions.values()), key=lambda x: -x[1])[:10])
         return list(descriptions.keys())[list(descriptions.values()).index(sorted(descriptions.values(), reverse = True)[0])] + ' ' + self.position.ucName
 
     @property
     def description(self) -> str:
-        # input(descriptions)
         return self.position.colorText(self.ucDescription)
     
+    @property
+    def iage(self) -> int:
+        return int(self.age)
+
     @property
     def ipac(self) -> int:
         return round(self.pac)
@@ -1495,8 +1576,8 @@ class Player(ColorText):
     def ipotential(self) -> int:
         return round(self.potential)
 
-    def genSuit(self, position: Position) -> dict[Position, float]:
-        suit: dict[Position, float] = {p: -max(0, sum([3 * random() - .5 for _ in range(max(1, int(self.getPositionScore(position) - self.getPositionScore(p) + 1.5 * random())))])) for p in Position.instances}
+    def genSuit(self, targetPosition: Position) -> dict[Position, float]:
+        suit: dict[Position, float] = {currentPosition: Calc.suitValue(self.getPositionScore(targetPosition), self.getPositionScore(currentPosition)) for currentPosition in Position.instances}
         mx: float = max(suit.values())
         for p in Position.instances:
             suit[p] -= mx
@@ -1515,14 +1596,14 @@ class Player(ColorText):
         Returns True if `targetTrait` is one of the traits of the player, False otherwise.
         `targetTrait` must be a Trait object or be in .searchOptions.
         '''
-        return targetTrait in self.traits or Trait.find(targetTrait) in self.traits
+        return (targetTrait in self.traits) or (Trait.find(targetTrait) in self.traits)
 
     def viewProfile(self, end: bool = True) -> None:
         '''Shows the profile of the player. If `end` is True, forces the user to press Enter.'''
         # input('\n' + '\n'.join([str(i) + '. ' + pos.shortName + ' ' + str(self.getPositionScore(pos)) for i, pos in enumerate(self.positions, 1)]) + '\n')
         clear()
         print(f'''<bold>{alignText(self.fullName + f"{SINGLE_QUOTE}s profile:", terminalWidth(), 'center', LINE)}</bold>
-<bold>Age:</bold>                <uyellow>{self.age}</uyellow>.\
+<bold>Age:</bold>                <uyellow>{self.iage}</uyellow>.\
 {f'\n<uorange>Rating:             {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}\
 {f'\n<uorange>Potential:          {round(self.potential, 2)}</uorange>.' if DEV_MODE else ''}
 <bold>Preferred position:</bold> {self.position.name}.
@@ -1798,7 +1879,7 @@ class Club(Find):
 <bold>Colors:</bold>          {self.colorText('   ', True)}{self.color2Text('   ', True)}.
 <bold>League:</bold>          {self.league.name}.\
 {f'\n<uorange>Rating:          {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}''')
-        t = Table([[i, p.position.shortName, p.nation.name, p.fullName, *p.iattributes, p.age, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True), 1)], ['№', 'Pos', 'Nation', 'Full name', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], f"<bold>{self.fullName}'s senior squad:</bold>", caption if end else None)
+        t = Table([[i, p.position.shortName, p.nation.name, p.fullName, *p.iattributes, p.iage, p.irating, p.ipotential] for i, p in enumerate(sorted(self.players, key=lambda x: x.rating, reverse=True), 1)], ['№', 'Pos', 'Nation', 'Full name', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')], f"<bold>{self.fullName}'s senior squad:</bold>", caption if end else None)
         t.print(end)
         clear()
 
@@ -1949,6 +2030,9 @@ while True:
     # for nation in sorted(Nation.instances, key=lambda x: x.rating, reverse=True):
     #     nation.viewProfile()
     
+    # for player in sorted(Player.instances, key=lambda x: x.rating, reverse=True):
+    #     player.viewProfile()
+    
     # cnt = {p.name: 0 for p in Position.instances}
     # for pl in Player.instances:
     #     cnt[pl.position.name] += 1
@@ -1968,7 +2052,7 @@ while True:
                         clear()
                         print('<uorange>Bye then... Hope to see you soon!</uorange>')
                         sleep(2)
-                        sysExit()
+                        fullExit()
                     continue
                 case 'load-game':
                     notReadyWarning()
