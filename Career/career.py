@@ -1,14 +1,23 @@
 ### TODO
-### add more descriptions
-### add GK!
+### change hero potential
+### add GK
 ### main cycle?
 
 ### Imports
 from __future__ import annotations
-
+from random import random, choice, choices, randint, normalvariate, betavariate
+from questionary import select as questionary, Choice
+from yaml import safe_load, safe_dump, YAMLError
+from colorama import just_fix_windows_console
+from pathvalidate import is_valid_filename
+from typing import Any, Callable, ClassVar
 from rich.progress import Progress, TaskID
-# from rich.layout import Layout
-# from rich import inspect
+from xml.parsers.expat import ExpatError
+from traceback import format_exc
+from sys import exit as fullExit
+from datetime import datetime
+from hashlib import sha3_224
+from time import sleep, time
 
 from prompt_toolkit import print_formatted_text, prompt
 from prompt_toolkit.completion import WordCompleter
@@ -18,19 +27,11 @@ from prompt_toolkit.styles import Style
 from os import name as osName, system, listdir, chdir, get_terminal_size as terminalSize
 from os.path import getmtime, exists, dirname, abspath
 
-from random import random, choice, choices, randint, normalvariate
-from questionary import select as questionary, Choice
-from yaml import safe_load, safe_dump, YAMLError
-from colorama import just_fix_windows_console
-from pathvalidate import is_valid_filename
-from typing import Any, Callable, ClassVar
-from traceback import format_exc
-from sys import exit as fullExit
-from datetime import datetime
-from hashlib import sha3_224
-from time import sleep, time
-from pprint import pprint
+# from pprint import pprint
 # import matplotlib.pyplot as plt
+# from rich.layout import Layout
+# from rich import inspect
+# from collections import Counter
 
 ### File variables
 
@@ -119,7 +120,7 @@ def input(*message: Any, sep: str = ' ', default: str = "", completer: WordCompl
     message: str = sep.join([str(part) for part in message])
     try:
         return prompt(HTML(message), style = mainStyle, default = default, completer = completer)
-    except (NameError, ValueError, TypeError, AttributeError):
+    except (ExpatError, NameError, ValueError, TypeError, AttributeError):
         return origInput(message)
 
 def print(*values: Any, sep: str = ' ', end: str = '\n') -> None:
@@ -146,7 +147,7 @@ def colorDoubleText(text: str, color: str) -> list[str]:
     '''Like `colorText()` but returns a list of 2 elements: colored usual text and colored capitalised text.'''
     return [colorText(text, color), colorText(text.capitalize(), color)]
 
-def uncolorText(text: str) -> str:
+def uncolor(text: str) -> str:
     '''Deletes all HTML color codes from `text`.'''
     try:
         for code in mainStyleDict.keys():
@@ -165,7 +166,7 @@ def alignText(text: str, width: int, align: str, fill: str = ' ', autoFix: bool 
     '''
     if fill != ' ' and text and autoFix:
         text = f'{" " if align in ["center", "right"] else ""}{text}{" " if align in ["center", "left"] else ""}'
-    newWidth = width + len(text) - len(uncolorText(text))
+    newWidth = width + len(text) - len(uncolor(text))
     match align.lower():
         case 'left':
             text = text.ljust(newWidth, fill)
@@ -214,8 +215,12 @@ def saveData(filePath: str, data: Any, allowExceptions: bool = False) -> bool:
     Raises an Exception instead of returning False if `allowException` is True.
     '''
     try:
+        try:
+            comment = comments[removeExtension(filePath.split('/')[-1])] + '\n'
+        except:
+            comment = ''
         with open(filePath, 'wb') as f:
-            f.write(dataToYAML(data))
+            f.write(bytes(comment, 'utf8') + dataToYAML(data))
         return True
     except (OSError, TypeError, YAMLError) as e:
         if allowExceptions:
@@ -237,7 +242,7 @@ def loadData(filePath: str, allowExceptions: bool = True, modifyComments: bool =
                 if not line or line[0] != '#':
                     break
             if modifyComments and commentLength:
-                comments[filePath.split('/')[1]] = '\n'.join(splitContents[:commentLength])
+                comments['.'.join(filePath.split('/')[-1].split('.')[:-1])] = '\n'.join(splitContents[:commentLength])
             return safe_load(contents)
     except (FileNotFoundError, OSError, YAMLError) as e:
         if allowExceptions:
@@ -354,6 +359,7 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
     freeAgents.players: list[Player] = []
     Nation(['Free agents'], '\u2500' * 3, 'free agent', 'ublack', -1, [], [])
     League('Friendly', Nation.instances.pop(), [freeAgents])
+    Nation.N -= 1
     League.instances.pop()
     global frames
     frames = loadData(files['frames'])
@@ -390,7 +396,6 @@ def createLeagues(progress: bool = False, bar: Progress | None = None, task: Tas
         League(leagueData['name'], leagueData['nation'], leagueClubs)
         if progress:
             bar.update(task, advance= value / len(leaguesData))
-    
     for j, nation in enumerate(Nation.instances):
         for i in range(randint(int(NATION_SQUAD_SIZE * 1.2), int(NATION_SQUAD_SIZE * 1.5))):
             freeAgents.players.append(genPlayer(1, i, Calc.freeAgentRating(j), nation))
@@ -474,6 +479,9 @@ def createTraits(progress: bool = False, bar: Progress | None = None, task: Task
             bar.update(task, advance=value / len(traits))
     if not wfExists:
         raise DatabaseError('A trait with the name "Weak Foot" must exist.')
+    Trait.categories = list(set((trait.ucCategory for trait in Trait.instances)))
+    if set(Trait.categories) != {'Physical', 'Attacking', 'Technical', 'Defensive', 'Set Piece'}:
+        raise DatabaseError(f"Trait category set {set(Trait.categories)} is not equal to {{'Physical', 'Attacking', 'Technical', 'Defensive', 'Set Piece'}}.")
 
 def createStyle(progress: bool = False, bar: Progress | None = None, task: TaskID | None = None, value: int | float = 0) -> dict[str, str]:
     '''
@@ -646,6 +654,23 @@ def rankingsMenu() -> str:
     clear()
     return toReturn
 
+def nationRankingsMenu() -> str:
+    '''
+    Creates the nation rankings menu. Can return:
+    - 'fifa-ranking'
+    - 'rating'
+    - 'quit'
+    '''
+    clear()
+    leagueOptions: list[MenuOption] = [
+        MenuOption('FIFA ranking (default)', 'gcyan', 'Sorts the nations by their FIFA ranking.', 'fifa-ranking'),
+        MenuOption('Rating', 'ucyan', 'Sorts the nations by the ratings of their national teams.', 'rating'),
+        MenuOption('Quit', 'dred', 'Quit to the rankings menu.', 'quit'),
+    ]
+    toReturn = menu('What do you want to sort them by?', leagueOptions)
+    clear()
+    return toReturn
+
 def leagueRankingsMenu() -> str:
     '''
     Creates the league rankings menu. Can return:
@@ -657,7 +682,7 @@ def leagueRankingsMenu() -> str:
     clear()
     leagueOptions: list[MenuOption] = [
         MenuOption('Average (default)', 'ugreen', 'Sorts the leagues by the average rating of their clubs.', 'average'),
-        MenuOption('Top half average', 'cgreen', 'Sorts the leagues by the average rating of their clubs that are in the top half of the table by this parameter.', 'top'),
+        MenuOption('Top half average', 'cgreen', 'Sorts the leagues by the average rating of their clubs that are in the top half of their table by this parameter.', 'top'),
         MenuOption('Median', 'gcyan', 'Sorts the leagues by the median rating of their clubs.', 'median'),
         MenuOption('Quit', 'dred', 'Quit to the rankings menu.', 'quit'),
     ]
@@ -710,17 +735,23 @@ def academyMenu(hero: dict[str, Any]) -> Club:
     sleep(3 if not result is freeAgents else 6)
     return result
 
-def viewNationRankings() -> None:
+def viewNationRankings(mode: str = 'fifa-ranking') -> None:
     '''Prints worldwide nation rankings.'''
-    tableHeaders = ['№', Header('Code ', columnAlign = 'center'), 'Nation', 'Best league', 'Best club', '№Pl']
+    sortFunc: Callable[[Player], float]
+    match mode:
+        case 'fifa-ranking': sortFunc = lambda x: -x.fifaRanking
+        case 'rating': sortFunc = lambda x: x.rating
+        case _: raise GameError(f'viewNationRankings({mode=}): mode is not "fifa-ranking" or "rating".')
+    tableHeaders = ([] if mode == 'fifa-ranking' else ['№']) + ['FIF', 'ShN', Header('Rating', columnAlign = 'center'), 'Nation', 'Best league', 'Best club', 'Star player']
     tableRows = []
-    for nation in Nation.instances:
-        tableRows.append([nation.fifaRanking, nation.shortName, nation.name, nation.leagues[0].name if nation.leagues else f'!fill {LINE}', nation.leagues[0].sortedClubs[0].name if nation.leagues else f'!fill {LINE}', len(nation.players)])
+    for i, nation in enumerate(sorted(Nation.instances, key=sortFunc, reverse=True), 1):
+        starPlayer: Player = sorted(nation.players, key=lambda x: x.rating, reverse=True)[0]
+        tableRows.append(([] if mode == 'fifa-ranking' else [i]) + [nation.fifaRanking, nation.shortName, str(round(nation.rating, 2)).ljust(5, '0'), nation.name, nation.leagues[0].name if nation.leagues else f'!fill {LINE}', nation.leagues[0].sortedClubs[0].name if nation.leagues else f'!fill {LINE}', f'{starPlayer.fullName} ({starPlayer.irating})'])
     Table(tableRows, tableHeaders, '<bold>Worldwide national team rankings:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 def viewLeagueRankings(mode: str = 'average') -> None:
     '''Prints worldwide league rankings.'''
-    tableHeaders = ['№', 'Rating', 'Code', 'League', 'Best clubs']
+    tableHeaders = ['№', 'Rating', 'ShoN', 'League', 'Best clubs']
     tableRows = []
     for i, league in enumerate(sorted(League.instances, key = lambda x: x.getRating(mode), reverse=True), 1):
         tableRows.append([i, str(league.getRating(mode)).ljust(5, '0'), league.shortName, league.name, ', '.join([club.name for club in league.sortedClubs[:3]])])
@@ -728,7 +759,7 @@ def viewLeagueRankings(mode: str = 'average') -> None:
 
 def viewClubRankings() -> None:
     '''Prints worldwide club rankings.'''
-    tableHeaders = ['№', Header('Rating', columnAlign = 'center'), Header('League', columnAlign = 'center'), 'Colors', Header('Code ', columnAlign = 'center'), 'Generic name', 'Nickname']
+    tableHeaders = ['№', Header('Rating', columnAlign = 'center'), 'Leag', 'Colors', 'ShN', 'Generic name', 'Nickname']
     tableRows = []
     for i, club in enumerate(sorted(Club.instances, key = lambda x: x.rating, reverse=True), 1):
         tableRows.append([i, str(round(club.rating, 2)).ljust(5, '0'), club.league.shortName, club.colorText('   ', bg=True) + club.color2Text('   ', bg=True), club.shortName, club.name, club.nickname])
@@ -738,19 +769,18 @@ def viewPlayerRankings(mode: str = 'rating') -> None:
     '''Prints worldwide player rankings.'''
     sortFunc: Callable[[Player], float]
     match mode:
-        case 'rating':
-            sortFunc = lambda x: x.rating
-        case 'potential':
-            sortFunc = lambda x: x.potential
-    tableHeaders = ['№', 'Full name', 'Nation', 'Club', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
+        case 'rating': sortFunc = lambda x: x.rating
+        case 'potential': sortFunc = lambda x: x.potential
+        case _: raise GameError(f'viewPlayerRankings({mode=}): mode is not "rating" or "potential".')
+    tableHeaders = ['№', 'Full name', 'Nation', 'Clb', 'Pos', Header('Pac', columnColor='uyellow'), Header('Sho', columnColor='ured'), Header('Pas', columnColor='ucyan'), Header('Dri', columnColor='umagenta'), Header('Dfn', columnColor='ugreen'), Header('Phy', columnColor='uwhite'), Header('Foot', 'left', columnColor='uorange'), Header('Age', columnColor='lbrown'), Header('OVR', columnColor='uwhite'), Header('POT', columnColor='dgreen')]
     tableRows = [[i, p.fullName, p.nation.name, p.club.shortName, p.position.shortName, *p.iattributes, p.foot, p.iage, p.irating, p.ipotential] for i, p in enumerate(sorted(Player.instances, key=sortFunc, reverse=True)[:1000], 1)]
     Table(tableRows, tableHeaders, '<bold>Top 1000 players in the database:</bold>', '<uyellow>Press Enter to go back to the start menu: </uyellow>').input()
 
 ### Misc functions
 
-def removeExtension(file: str, extension: str = FILE_EXTENSION) -> str:
-    '''Removes the given extension from the given file path.'''
-    return file.replace(extension, '')
+def removeExtension(filePath: str) -> str:
+    '''Removes the extension from the given file path.'''
+    return '.'.join(filePath.split('.')[:-1])
 
 def progressBarSetting() -> bool:
     '''Same as `settings.viewProgress` but works before `settings` were created.'''
@@ -862,7 +892,7 @@ class Calc:
         
     @staticmethod
     def freeAgentRating(nationI: int) -> float:
-        return FREE_AGENT_AVERAGE_RATING + (.5 - nationI / (len(Nation.instances) - 1)) * 15
+        return round(FREE_AGENT_AVERAGE_RATING - (nationI / Nation.N) * 15 + 60 * betavariate(1.3, 3.6) - 10 - max(1, 1.02 ** (nationI - Nation.N / 2)))
     
     @staticmethod
     def academyOfferCount() -> int:
@@ -917,7 +947,7 @@ class Settings:
         The amount the bar will move by is determined by `value`.
         '''
         Setting.instances = []
-        self._contents: list[dict[str, Any]] = loadData(files['settings'])
+        self._contents: list[dict[str, Any]] = loadData(files['settings'], modifyComments=True)
         if progress:
             bar.update(task, advance=value / 2)
         self._progress: bool = progress
@@ -939,7 +969,7 @@ class Settings:
                 'setTo': setting.setTo,
                 'values': setting.values
             })
-        if not saveData(files['settings'], data):
+        if not saveData(files['settings'], data, True):
             clear()
             input('<ured>An error occured while trying to save the settings.\nPress Enter to continue: </ured>')
 
@@ -979,7 +1009,7 @@ class Setting:
         Arguments:
         - `data`: A dictionary that contains the setting's `name`, `description`, `setTo` and `values`.
         '''
-        self.__class__.instances.append(self)
+        Setting.instances.append(self)
         self.name: str = data['name']
         self.description: str = data['description'].replace(DOUBLE_BACKSLASH_N, BACKSLASH_N)
         self.setTo: str = data['setTo']
@@ -1175,7 +1205,7 @@ class Table:
         for line in printable[:-len(self.caption.splitlines()) if inputToo and self.caption else len(printable)]:
             print(line)
         if inputToo:
-            return input(self.caption + ('' if uncolorText(self.caption)[-len(self.caption.splitlines())] == ' ' else ' ') if self.caption else '')
+            return input(self.caption + ('' if uncolor(self.caption)[-len(self.caption.splitlines())] == ' ' else ' ') if self.caption else '')
 
 class Header:
     '''
@@ -1196,7 +1226,7 @@ class Header:
         - `columnColor`: The color of every cell in the header's column.
         '''
         self.text: str = str(text)
-        self.ucText: str = uncolorText(str(text))
+        self.ucText: str = uncolor(str(text))
         self.selfAlign: str = selfAlign
         self.columnAlign: str = columnAlign
         self.columnColor: str | None = columnColor
@@ -1214,7 +1244,7 @@ class Row:
         - `*cells`: Cell values.
         '''
         self.cells: list[str] = [str(cell) for cell in cells]
-        self.ucCells: list[str] = [uncolorText(cell) for cell in self.cells]
+        self.ucCells: list[str] = [uncolor(cell) for cell in self.cells]
 
 class Nation(ColorText, Find):
     '''
@@ -1237,9 +1267,11 @@ class Nation(ColorText, Find):
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
     - `.instances`: A list of all Nation instances except the free agents one.
     - `.teams`: A list of all national teams.
+    - `.N`: The number of nations in the game.
     '''
     instances: ClassVar[list[Nation]] = []
     teams: ClassVar[list[Club]] = []
+    N: ClassVar[int] = 0
     
     def __init__(self, names: list[str], shortName: str, nationality: str, color: str, fifaRanking: int, firstNames: list[str], lastNames: list[str]) -> None:
         '''
@@ -1252,7 +1284,7 @@ class Nation(ColorText, Find):
         - `firstNames`: Some first names of the people of the nation.
         - `lastNames`: Some last names of the people of the nation.
         '''
-        self.__class__.instances.append(self)
+        Nation.instances.append(self)
         self.color: str = color
         self.ucName: str = names[0]
         self.ucNames: list[str] = names
@@ -1270,6 +1302,7 @@ class Nation(ColorText, Find):
         self.players: list[Player] = []
         self.searchOptions: list[str] = [str(self.fifaRanking), self.ucShortName.lower()] + [nationName.lower() for nationName in self.ucNames]
         self.team = Club(-1, self.ucName, self.ucNames, f'The {self.nationality} Team', self.ucShortName, [self.color, 'default'], nationalTeam=True)
+        Nation.N += 1
 
     def pickTeam(self):
         self.team.players = sorted(self.players, key=lambda x: x.rating, reverse=True)[:NATION_SQUAD_SIZE]
@@ -1321,8 +1354,10 @@ class Trait(ColorText, Find):
     - `.category`: The category of the trait.
     - `.uc{Attribute}`: Same as `.{attribute}` but contains uncolored text instead of colored.
     - `.instances`: A list of all Trait instances.
+    - `.categories`: A list of all categories that Trait instances have. Categories don't repeat.
     '''
     instances: ClassVar[list[Trait]] = []
+    categories: ClassVar[list[str]] = []
     
     def __init__(self, name: str, description: str, color: str, category: str) -> None:
         '''
@@ -1332,13 +1367,13 @@ class Trait(ColorText, Find):
         - `color`: The color of the trait.
         - `category`: The category of the trait.
         '''
-        self.__class__.instances.append(self)
+        Trait.instances.append(self)
         self.color: str = color
-        self.num: str = self.colorText(len(self.__class__.instances))
+        self.ucNum: int = len(Trait.instances)
+        self.num: str = self.colorText(self.ucNum)
         self.name: str = self.colorText(name)
         self.description: str = self.colorText(description)
         self.category: str = self.colorText(category)
-        self.ucNum: int = len(self.__class__.instances)
         self.ucName: str = name
         self.ucDescription: str = description
         self.ucCategory: str = category
@@ -1378,7 +1413,7 @@ class Position(ColorText):
         - `setPieceKoe`: The probability of a player in this position having a set piece related trait.
         - `modifier`: The modifier used to calculate the overall of a player.
         '''
-        self.__class__.instances.append(self)
+        Position.instances.append(self)
         self.weightings: list[float] = weightings
         self.setPieceKoe: float = setPieceKoe
         self.modifier: float = modifier
@@ -1425,7 +1460,7 @@ class Player(ColorText):
         - `age`: The age of the player.
         - `squad`: The squad that the player is currently in. For example, `'U18'`.
         '''
-        self.__class__.instances.append(self)
+        Player.instances.append(self)
         self.age: float = age
         if isinstance(self, Hero):
             self.squad = 'U18'
@@ -1485,40 +1520,53 @@ class Player(ColorText):
         return sorted(Position.instances, key = lambda x: self.suit[x] if hasattr(self, 'suit') else self.getPositionScore(x), reverse=True)
 
     @property
-    def ucDescription(self) -> str:
-        descriptions = {
+    def descriptionDict(self) -> dict[str, float]:
+        return {
             ### Age based
             'young': 3 - (self.age - 16) ** 2 / 3,
             'promising': 3 - (self.age - 18) ** 2 / 2,
             'veteran': min(4, 1.5 ** (self.age - 33)),
             ### Attribute based
-            'pacey': self.getDifferenceFromMax(self.pac) / 4,
-            'lethal': self.getDifferenceFromMax(self.sho) / 3,
-            'creative': self.getDifferenceFromMax(self.pas) / 3,
-            'skillful': self.getDifferenceFromMax(self.dri) / 3,
-            'tenacious': self.getDifferenceFromMax(self.dfn) / 3,
-            'robust': self.getDifferenceFromMax(self.phy) / 4,
+            'pacey': self.getDifferenceFromMax(self.pac) / 6 if self.pac >= 65 else 0,
+            'lethal': self.getDifferenceFromMax(self.sho) / 2 if self.sho >= 60 else 0,
+            'creative': self.getDifferenceFromMax(self.pas) / 2 if self.pas >= 60 else 0,
+            'skillful': self.getDifferenceFromMax(self.dri) / 3 if self.dri >= 60 else 0,
+            'tenacious': self.getDifferenceFromMax(self.dfn) / 3 if self.dfn >= 60 else 0,
+            'robust': self.getDifferenceFromMax(self.phy) / 4 if self.phy >= 65 else 0,
+            'elegant': (max(0, self.traitCategoryCount('Technical') * 3 + self.traitCategoryCount('Attacking') * 2 - len(self.traits)) ** 0.7) if self.rating > 80 else 0,
+            'unforgiving': (max(0, self.traitCategoryCount('Technical') * 2 + self.traitCategoryCount('Attacking') * 3 - len(self.traits)) ** 0.7) if self.rating > 80 else 0,
+            'complete': 100 / (10 + self.getDifferenceFromMax(min(self.attributes)) ** 2),
             ### Quality based
-            'left-footed': 2 if self.foot == 'left' else 0,
-            'versatile': len(self.secondaryPositions) ** 1.5 / 2.5,
+            '!southpaw': 1.6 if self.foot == 'left' else 0,
+            'ambidextrous': 1.7 if self.hasTrait('Weak Foot') else 0,
+            'versatile': len(self.secondaryPositions) ** 2 / 8,
+            '!targetman': 1.6 + int(self.hasTrait('Header')) + max(0, self.getDifferenceFromMax(self.phy)) / 6 if self.position.ucShortName == 'ST' and self.hasTrait('Aerial') else 0,
+            'magical': 2.2 + max(0, self.getDifferenceFromMax(self.dri)) / 5 if self.hasTrait('Flair') and self.hasTrait('Trickster') and self.rating >= 75 else 0,
             ### Trait based
-            'tireless': 2.7 if self.hasTrait('Engine') else 0,
-            'tricky': 2.8 if self.hasTrait('Fox') else 0,
-            'ambidextrous': 2.5 if self.hasTrait('Weak Foot') else 0,
-            'special': len(self.traits) ** 1.4 / 3,
-            'magical': (max(0, sum([int(trait.ucCategory == 'Technical') * 3 + int(trait.ucCategory == 'Attacking') * 2 for trait in self.traits]) - len(self.traits)) ** 0.7) if self.rating > 80 else 0,
-            'unforgiving': (max(0, sum([int(trait.ucCategory == 'Technical') * 2 + int(trait.ucCategory == 'Attacking') * 3 for trait in self.traits]) - len(self.traits)) ** 0.7) if self.rating > 80 else 0,
+            'tireless': self.getDifferenceFromMax(self.phy) / 3 if self.hasTrait('Engine') else 0,
+            'tricky': 2.2 if self.hasTrait('Fox') and self.traitCategoryCount('Set Piece') >= 2 else 0,
+            '!set piece specialist': self.traitCategoryCount('Set Piece') ** 1.5 / 1.8 if self.traitCategoryCount('Set Piece') >= 2 else 0,
+            'special': len(self.traits) ** 1.4 / 3.5 if len(self.traits) >= 5 else 0,
             ### Rating based
-            'superstar': 10 if self.rating >= 93.5 else 0,
-            'exceptional': 8 if self.rating >= 91.5 else 0,
-            'world class': (self.rating - 70) ** 1.35 / 20,
-            'legendary': ((self.rating - 70) ** 1.35 / 20) ** 2.8 * self.age ** 7 / 300_000_000_000,
-            'rising': (self.rating - 60) / 10 if self.age < 23 else 0,
+            '!superstar': self.rating / 9 if self.rating >= 93.5 else 0,
+            'exceptional': self.rating / 10 if self.rating >= 91.5 else 0,
+            'elite': max(0, self.rating - 70) ** 1.5 / 20 - .9,
+            'world class': max(0, self.rating - 70) ** 1.35 / 20,
+            'legendary': (max(0, self.rating - 70) ** 1.35 / 20) ** 2.8 * self.age ** 7 / 300_000_000_000,
+            'breakout': (max(0, self.rating - 70) / 10) ** 2.5 if self.age < 23 else 0,
+            '!wonderkid': (max(0, self.rating - 65) / 10) ** 2.5 if self.age < 20 else 0,
             ### Misc
-            self.nation.ucNationality: 1
+            self.nation.ucNationality: 1.5
         }
-        # pprint(sorted(zip(descriptions.keys(), descriptions.values()), key=lambda x: -x[1])[:10])
-        return list(descriptions.keys())[list(descriptions.values()).index(sorted(descriptions.values(), reverse = True)[0])] + ' ' + self.position.ucName
+    
+    @property
+    def pureDescription(self) -> str:
+        return list(self.descriptionDict.keys())[list(self.descriptionDict.values()).index(sorted(self.descriptionDict.values(), reverse = True)[0])]
+
+    @property
+    def ucDescription(self) -> str:
+        pureDesc = self.pureDescription
+        return f"{self.iage}-year-old {pureDesc[1:] if pureDesc[0] == '!' else (pureDesc + ' ' + self.position.ucName)}"
 
     @property
     def description(self) -> str:
@@ -1596,12 +1644,19 @@ class Player(ColorText):
         Returns True if `targetTrait` is one of the traits of the player, False otherwise.
         `targetTrait` must be a Trait object or be in .searchOptions.
         '''
-        return (targetTrait in self.traits) or (Trait.find(targetTrait) in self.traits)
+        return (targetTrait in self.traits) or (Trait.find(targetTrait, True) in self.traits)
+    
+    def traitCategoryCount(self, category: str) -> int:
+        category = uncolor(category)
+        if not category in Trait.categories:
+            raise GameError(f'traitCategoryCount({category=}) called with category not in {Trait.categories = }.')
+        return sum([int(trait.ucCategory == category) for trait in self.traits])
 
     def viewProfile(self, end: bool = True) -> None:
         '''Shows the profile of the player. If `end` is True, forces the user to press Enter.'''
         # input('\n' + '\n'.join([str(i) + '. ' + pos.shortName + ' ' + str(self.getPositionScore(pos)) for i, pos in enumerate(self.positions, 1)]) + '\n')
         clear()
+        # print(f'Desc: {self.pureDescription}, score: {round(self.descriptionDict[self.pureDescription], 2)}')
         print(f'''<bold>{alignText(self.fullName + f"{SINGLE_QUOTE}s profile:", terminalWidth(), 'center', LINE)}</bold>
 <bold>Age:</bold>                <uyellow>{self.iage}</uyellow>.\
 {f'\n<uorange>Rating:             {round(self.rating, 2)}</uorange>.' if DEV_MODE else ''}\
@@ -1858,7 +1913,7 @@ class Club(Find):
         except NameError:
             return
         self.searchOptions: list[str] = [self.ucFullName.lower(), self.ucNickname.lower(), self.ucShortName.lower()] + [clubName.lower() for clubName in self.ucNames]
-        self.__class__.instances.append(self)
+        Club.instances.append(self)
     
     @property
     def rating(self) -> float:
@@ -1924,7 +1979,7 @@ class League(Find):
         - `nation`: The nation the league corresponds to.
         - `clubs`: A list of all clubs that participate in the league.
         '''
-        self.__class__.instances.append(self)
+        League.instances.append(self)
         self.nation: Nation = nation
         self.nation.leagues.append(self)
         self.level: int = len(self.nation.leagues)
@@ -2027,10 +2082,12 @@ while True:
 
     # freeAgents.nation.viewProfile()
     
-    # for nation in sorted(Nation.instances, key=lambda x: x.rating, reverse=True):
+    # for nation in sorted(Nation.instances, key=lambda x: x.rating + random() * 100, reverse=True):
     #     nation.viewProfile()
+
+    # input(pprint(Counter([list(self.descriptionDict.keys())[list(self.descriptionDict.values()).index(sorted(self.descriptionDict.values(), reverse = True)[0])] for self in Player.instances])))
     
-    # for player in sorted(Player.instances, key=lambda x: x.rating, reverse=True):
+    # for player in sorted(Player.instances, key=lambda x: x.descriptionDict[x.pureDescription] + 100 * bool(x.pureDescription in ['!wonderkid']), reverse=True):
     #     player.viewProfile()
     
     # cnt = {p.name: 0 for p in Position.instances}
@@ -2075,7 +2132,12 @@ while True:
                         result = rankingsMenu()
                         match result:
                             case 'nations':
-                                viewNationRankings()
+                                while True:
+                                    result = nationRankingsMenu()
+                                    if result == 'quit':
+                                        entered = False
+                                        break
+                                    viewNationRankings(result)
                             case 'leagues':
                                 while True:
                                     result = leagueRankingsMenu()
